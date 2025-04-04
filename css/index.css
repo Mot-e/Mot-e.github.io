@@ -21115,29 +21115,29 @@ svg.icon {
 
 /* 文章页面正文背景 */
 div#post {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(198, 239, 195, 0.9);
 }
 #recent-posts > .recent-post-item:not(:first-child):active {
   transform: scale(0.97);
 }
 /* 分页页面 */
 div#page {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(198, 239, 195, 0.9);
 }
 
 /* 归档页面 */
 div#archive {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(198, 239, 195, 0.9);
 }
 
 /* 标签页面 */
 div#tag {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(233, 161, 7, 0.9);
 }
 
 /* 分类页面 */
 div#category {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(250, 249, 249, 0.9);
 }
 
 /*夜间模式伪类遮罩层透明*/
@@ -21292,6 +21292,47 @@ html.hide-aside .layout > div:first-child {
   }
 }
 
+
+
+
+
+/* 全局背景设置 */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -999;
+  width: 100%;
+  height: 100%;
+  background: url(https://img.mote.nyc.mn/file/1743740467510_background.webp) center/cover no-repeat fixed;
+
+}
+
+/* 内容区域半透明效果 */
+#web_bg {
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
+[data-theme="dark"] #web_bg {
+  background: rgba(18, 18, 18, 0.85) !important;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  body::before {
+    background-attachment: scroll;
+    filter: blur(3px);
+  }
+  
+  #web_bg {
+    background: rgba(255, 255, 255, 0.95) !important;
+  }
+  
+  [data-theme="dark"] #web_bg {
+    background: rgba(18, 18, 18, 0.95) !important;
+  }
+}
 #aside-content .card-widget#card-wechat {
   background: #57bd6a;
   display: flex;
