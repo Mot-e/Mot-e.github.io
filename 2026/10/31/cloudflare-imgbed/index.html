@@ -1,0 +1,1376 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><title>零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战 | Mote-blog</title><meta name="keywords" content="Cloudflare,图床,ImgBed,Telegram,R2,D1,Pages,免费图床,自建图床"><meta name="author" content="Mote"><meta name="copyright" content="Mote"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#F7F9FE"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="apple-mobile-web-app-title" content="零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战"><meta name="application-name" content="零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="#F7F9FE"><meta property="og:type" content="article"><meta property="og:title" content="零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战"><meta property="og:url" content="http://blog521126.xyz/2026/10/31/cloudflare-imgbed/index.html"><meta property="og:site_name" content="Mote-blog"><meta property="og:description" content="不买服务器、不备案、不付存储费，用 Cloudflare 免费额度把图床做出来。含完整初始化 SQL、每一处界面路径、三个必测验证和所有踩过的坑。"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://img.521126.xyz/file/1793444376407_imgbed.png"><meta property="article:author" content="Mote"><meta property="article:tag"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://img.521126.xyz/file/1793444376407_imgbed.png"><meta name="description" content="不买服务器、不备案、不付存储费，用 Cloudflare 免费额度把图床做出来。含完整初始化 SQL、每一处界面路径、三个必测验证和所有踩过的坑。"><link rel="shortcut icon" href="/favicon.ico"><link rel="canonical" href="http://blog521126.xyz/2026/10/31/cloudflare-imgbed/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="xxx"/><meta name="baidu-site-verification" content="code-xxx"/><meta name="msvalidate.01" content="xxx"/><link rel="manifest" href="/manifest.json"/><meta name="msapplication-TileColor" content="var(--anzhiyu-main)"/><link rel="mask-icon" href="/img/siteicon/apple-icon-180.png" color="#5bbad5"/><link rel="apple-touch-icon" sizes="180x180" href="/img/siteicon/apple-icon-180.png"/><link rel="apple-touch-icon-precomposed" sizes="180x180" href="/img/siteicon/apple-icon-180.png"/><link rel="icon" type="image/png" sizes="32x32" href="/img/siteicon/32.png"/><link rel="icon" type="image/png" sizes="16x16" href="/img/siteicon/16.png"/><link rel="bookmark" href="/img/siteicon/apple-icon-180.png"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1620-2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2160-1620.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1290-2796.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2796-1290.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1179-2556.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2556-1179.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2778-1284.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2532-1170.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.0/swiper/swiper.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  linkPageTop: undefined,
+  peoplecanvas: undefined,
+  postHeadAiDescription: undefined,
+  diytitle: {"enable":true,"leaveTitle":"w(ﾟДﾟ)w 不要走！再看看嘛！","backTitle":"♪(^∇^*)欢迎肥来！"},
+  LA51: {"enable":true,"ck":null,"LingQueMonitorID":null},
+  greetingBox: undefined,
+  twikooEnvId: 'https://blog-twikoo-db.521126.xyz/',
+  commentBarrageConfig:{"enable":true,"maxBarrage":1,"barrageTime":4000,"accessToken":"","mailMd5":""},
+  music_page_default: "/music/?id=1708664797&server=tencent",
+  root: '/',
+  preloader: {"source":3},
+  friends_vue_info: undefined,
+  navMusic: true,
+  mainTone: undefined,
+  authorStatus: {"skills":["📚 教育书香满室芳","💼 职业路上竞辉煌","🌱 个人发展如春笋","🏋️‍♂️ 健康体魄胜金汤","🏡 家庭和睦乐无疆","👥 社交广结四海良","🤝 志愿服务情意长","🎨 艺术文化润心田","🎉 休闲娱乐笑开颜","💰 财务管理需谨慎","🕉️ 宗教精神静如山","🌍 旅游环保绿青山"]},
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简","rightMenuMsgToTraditionalChinese":"转为繁体","rightMenuMsgToSimplifiedChinese":"转为简体"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":330},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    simplehomepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"copy":true,"copyrightEbable":false,"limitCount":50,"languages":{"author":"作者: Mote","link":"链接: ","source":"来源: Mote-blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。","copySuccess":"复制成功，复制和转载请标注本文地址"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#425AEF","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2.1.2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2.1.2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true,
+  shortcutKey: undefined,
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  configTitle: 'Mote-blog',
+  title: '零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战',
+  postAI: '用 Cloudflare Pages + D1 数据库 + Telegram 频道 + R2 存储桶，做一套零成本、可长期使用的自建图床。本文给出完整部署路径、初始化 SQL、三处必测验证，以及缓存额度与安全清单。',
+  pageFillDescription: '零、先说项目地址, 一、为什么自建图床, 二、架构：四层各司其职, 三、免费额度到底有多少, 四、前置准备, 4.1 账号清单, 4.2 Telegram：拿 Bot Token 和 Chat ID, 4.3 R2：建桶, 五、Pages 部署, 5.1 Fork 仓库, 5.2 创建 Pages 项目, 5.3 构建配置（这四项决定成败）, 5.4 首次部署与预期现象, 六、D1 数据库（附完整 SQL）, 6.1 建库, 6.2 初始化表结构, 第一段：5 张表, 第二段：12 个索引, 第三段：4 个触发器, 验证表是否建好, 命令行方案（控制台始终不认时的备选）, 6.3 为什么必须用 D1不用 KV, 6.4 绑定（变量名写死不能错）, 6.5 必须手动「重试部署」, 七、绑定 R2, 八、后台配置, 8.1 第一件事：设密码, 8.2 配 Telegram 渠道, 8.3 配 R2 渠道, 8.4 设默认渠道, 8.5 负载均衡保持关闭, 九、验证：三个必测项, 9.1 上传落点, 9.2 R2 通道本身可用, 9.3 兜底是否真的兜底, 十、缓存：省额度的关键, 10.1 三类请求的默认行为, 10.2 加一条 Cache Rule, 10.3 验证缓存是否命中, 十一、缓存的副作用：删图不生效, 十二、接 PicGo, 12.1 装插件, 12.2 配置图床, 12.3 两个容易出错的地方, 12.4 排错对照, 十三、自定义域名, 十四、安全清单, 十五、常见报错速查, 十六、这套方案适合谁, 十七、最后一句实话写博客的人都绕不开一个问题图片存哪用第三方图床怕运营方跑路怕忽然收费限速把图片直接提交进仓库几十篇文章下来仓库能到几百克隆一次等半天而自己买服务器跑图床为了几张截图付一整台怎么算都不划算这篇记录一套我实际跑通的方案托管存元数据存文件兜底全程只用免费额度不买服务器不用备案不付流量费视频版在这里跟着操作更直观下面把完整的项目地址全部初始化每一处界面路径和踩过的坑都写清楚照着做就能复刻零先说项目地址本文用的开源项目是协议本文写作时版本约项目地址仓库官方文档初始化原始文件它有四个关键特性决定了它值得折腾元数据与文件解耦数据库只存路径标签真实文件写进外部存储渠道支持六种存储后端兼容同构内核同一套代码可跑在三种运行时多渠道负载均衡失败自动切换下面所有配置都以为准版本差异主要在后台菜单位置参数名基本稳定一为什么自建图床理想方案得同时满足四个条件容量足够大长期不花钱链接稳定能自己管主流选择其实就三个方向方案免费额度主要短板存储出网全免费需要绑卡容量是硬上限频道容量近似无限单文件无条款灰色大厂对象存储新用户试用额度试用期结束按量计费出网费贵单独用任何一个都有明显缺陷但这三个的短板恰好能互补出容量出稳定性出访问入口二架构四层各司其职浏览器边缘函数域名鉴权缓存图片尺寸处理数据库元数据文件名路径存储渠道频道主力容量无限存储桶兜底稳定大文件关键设计是元数据与文件解耦数据库里只存谁什么时候存在哪个渠道的哪个真实文件躺在或里两个直接好处换存储后端不影响已有链接链接永远是你的域名跟后端无关可配多渠道上传失败自动切换一个必须提前说清的认知这套方案的兜底发生在上传时不是读取时也不做双写上传失败超限流抖动时自动重试并落到已存进的图不会自动复制到出问题时这部分仍然会挂理解这一点后面的配置才有意义三免费额度到底有多少先把账算清楚这是整套方案成不成立的前提资源免费额度折算成实际用量频道无官方配额按一张几十万张量级单文件下载上限超出自动分片存储月约万张图出网流量无限免费相对最大的优势读操作类万次月约万次天写操作类万次月约万次天请求万次天未命中缓存时有效次图片处理要注意存储库元数据每条几百字节够存几十万条写入万行天每张图行不推荐读万日写日写入是硬伤结论很清楚存储不是瓶颈请求才是图片一旦被缓存命中就不再消耗额度所以缓存配置得好不好直接决定这套图床能扛多少访问四前置准备账号清单账号且已绑定支付方式必须绑卡才能开通绑卡不等于收费一个已托管在的域名指向状态图片尺寸处理依赖它不支持账号账号拿和第一步建搜索认准蓝色勾发送输入显示名随意如输入用户名必须以结尾全局唯一如它会回复一段那串数字字母就是只显示一次立刻存好等于的完全控制权如果截图发过群贴过论坛去发换一个旧立即作废第二步建私有频道新建消息新建频道名称随意如图床存储关键选私密频道不要选公开建好后进频道点频道名管理员添加管理员搜索你刚建的用户名添加权限开关里把管理消息打开没有这个权限上传会报这个报错不会告诉你是权限问题第三步拿在频道里发一条测试消息打个长按该消息转发转发给它返回一串形如的数字前面的负号必须保留少一个负号后面必然失败建桶左侧对象存储首次进入需同意条款并启用创建存储桶全局唯一如选必须是千万别选它不享受免费额度还会收数据取回费公开访问先不用开那个默认域名有速率限制正式用要绑自定义域名等最后一起处理五部署仓库打开右上角分支保持创建项目计算和创建页面下拉找到选导入现有存储库首次会让你授权选只授权的那个仓库构建配置这四项决定成败配置项必须填项目名称随意生产分支构建命令构建输出目录根目录留空坑位一构建命令不是项目从起改了构建方式更要命的是这个仓库根目录的里没有任何依赖全部放在子包里靠提升上来所以只要没有真正执行就是空的打包时会一口气报十个错只是第一个被打印出来的看到这个错不要去装某个具体的包回去检查构建命令另一个判断依据是时间从开始构建到报错只用了秒真正跑完一次不可能这么快说明安装环节被整个跳过了三种常见错法表现完全一样构建命令留空不会替你装依赖填没有直接失败填这仓库根本没有脚本补一个保险措施设置变量和机密添加因为以前不认识字段会把子包依赖全部忽略报错一模一样首次部署与预期现象点保存并部署等分钟会给你一个域名这时候打开它大概率是白页或报错这是正常的数据库还没绑环境变量一个都不用填之后所有业务配置都在后台注意构建成功后会给你两个域名形如项目名和项目名前面带哈希的是单次部署的预览域名每次重新部署都会变以后一律用不带哈希的生产域名否则某次部署后旧链接就了六数据库附完整建库存储和数据库数据库创建数据库名称填创建初始化表结构点进上方切控制台粘贴执行坑位二整段粘贴会提示原因是控制台的输入焦点问题内容看着在框里但点击执行时读的是空内容另外从某些编辑器复制时还会丢掉换行整段挤成一行一旦某条语句语法错误就很难定位解决办法拆成三段按顺序各执行一次下面是可以直接复制的完整内容第一段张表第二段个索引第三段个触发器全部带重复执行安全缺表就再跑一遍执行时的三个要点先单击编辑框看到光标在里面再确认内容真的在框里用直接执行比点按钮更可靠每段成功的标志是出现之类的提示验证表是否建好切到表标签或者执行这条查询应该返回行可能额外多一个那是自带的内部表每个都有不影响使用命令行方案控制台始终不认时的备选首次会要浏览器登录授权账号之后一条命令跑完全部建表为什么必须用不用这是硬性依赖不能省图片实体存在里但文件名路径标签上传时间这些信息必须存在数据库里没有数据库返回的无处保存下次访问就找不到图上传接口直接报选哪个数据库是可以选的选项结论能用但每天只有次写入等于每天最多传张且不支持大文件上传推荐免费支持大文件性能略差但对图床无感绑定变量名写死不能错项目设置绑定添加选数据库字段值变量名称数据库坑位三绑定变量名是代码里写死的绑定类型变量名说明数据库必填存储桶必填命名空间用时不需要写错不会报变量名不正确而是应用启动失败或后台进不去报错信息毫无指向性这三个名字建议直接抄必须手动重试部署绑定本身不会触发构建改完设置回部署最新那条重试部署等分钟不重试代码里读不到新绑定七绑定项目设置绑定添加存储桶字段值变量名称存储桶你的桶名保存回部署重试部署绑成功后回后台系统设置上传设置应该能看到这一栏自动出现显示为说明变量名读对了八后台配置访问你的域名老版本是管理端默认免密第一件事设密码现在任何人知道域名就能进后台删你的图立刻去系统设置安全设置认证管理设两套类型用途管理端认证用户名密码登录后台用户端认证上传认证码登录和调用这两套是独立的别搞混管理员密码管后台上传认证码管传图配渠道系统设置上传设置渠道添加渠道字段填什么渠道名称主渠道第步拿到的负号保留代理留空边缘通常能直连启用状态打开配渠道在区域点卡片上的编辑字段值容量上限公开访问链接留空不开图片审查就不需要这个上限一定要设不设就是无限额开放某天误传一堆大图就开始计费了设而不是是留余量计费按计算卡边容易踩线设默认渠道系统设置网页设置客户端设置字段选默认渠道类型默认渠道名称主渠道负载均衡保持关闭卡片和卡片右上角都有负载均衡开关保持关闭理由兜底渠道一旦参与日常分流就不叫兜底了那会被日常小图慢慢吃掉九验证三个必测项部署完不能只看页面能打开要验证三条链路上传落点新开标签打开你的域名用上传认证码登录传一张小图两个验证点文件卡片渠道显示打开私有频道能看到这张图第二点是最硬的验证它同时证明有发消息权限正确有效三样错任何一个上传都会失败并提示或通道本身可用上传时把渠道下拉手动切到传一张三个验证点卡片渠道显示点图能打开复制链接能访问控制台桶对象列表出现该文件路径形如兜底是否真的兜底把主渠道卡片右上角的开关关掉回上传页渠道保持默认传一张显示成功且落在兜底生效报错无可用渠道说明这个版本只在单次上传失败时切换默认渠道被禁用不会改道测完立刻把开关打开这两张测试图会永久留在不做双写额度里这点体积无所谓想保持干净测完删掉即可十缓存省额度的关键图片链接形如由边缘函数返回默认每次访问都要跑一次函数消耗每日万次的额度三类请求的默认行为路径谁处理默认缓存静态托管自动缓存命中率极高取决于源站不该缓存命中缓存不触发不消耗每日额度加一条选中域名缓存创建规则项值规则名称匹配条件开头是缓存资格符合条件忽略源站设为年天表达式写法别对和加任何缓存规则否则会出现传了图但列表不更新这种诡异问题验证缓存是否命中打开任意一张图看响应头刷新两次第一次第二次结论规则生效规则没匹配上匹配上了但没存住源站返回了或十一缓存的副作用删图不生效这是唯一让我不适的地方图删了但浏览器和还存着旧副本链接照样打开三种处理方式方案操作评价配凭据自动清后台填最省事但要交出全局密钥手动清缓存清除缓存输多一步零风险等自然过期什么都不做接受延迟如果想手动清可以用这个你的域名我选了手动清理由项目要求填的是也就是全局密钥权限等于整个账号能改能删域名能看所有账单个人图床删图频率不高为省这一步交出一个全账号密钥风险收益不划算真要上方案务必定期轮换十二接走图床自己的接口这样渠道分配和数据库记录都保留装插件插件设置搜索安装配置图床图床设置图床字段值地址见下方参数名自定义留空图片键名地址一行到底不要换行你的域名你的上传认证码三个参数的作用上传认证码固定走想临时存改成必须加否则返回相对路径粘到文章里就是死链两个容易出错的地方图片键名必须是接口返回的是数组不是对象写成或都会取不到值提示上传成功但无法获取图片地址域名用自定义域名不要用以后换域名所有历史链接不会跟着变排错对照现象原因认证失败错或用户端认证码没保存成功上传成功但链接是漏了无法获取图片地址图片键名不是错或不在频道里不是管理员或没开管理消息权限超报错正常单文件上限里开上传前压缩十三自定义域名用子域名别占主站项目自定义域设置自定义域输入你的域名同一账号下会自动加不用手动配等状态从正在初始化变证书自动签发然后做两件容易漏的事把新域名加进白名单后台安全设置访问管理放行域名你的域名两个都要留旧的还在用删了会导致旧链接全部英文逗号分隔别加空格让新链接默认走新域名系统设置网页设置全局设置默认前缀你的域名已传过的图链接不会变仍然走旧域名但内容一样能访问可选选中域名转换启用即可支持这类参数有免费额度超出按次计费不开也完全不影响使用十四安全清单部署完这六项逐条过一遍管理端账号密码默认无密码任何人可进上传认证码关闭远端遥测默认开启会上报你的域名和访问链接给项目开发者开启域名过滤只放行自己的域名防盗链建一个只含权限的设天过期过期自动删除白名单模式保持关闭它是应急手段被大规模盗链时临时开日常用会非常麻烦创建后只显示一次弹窗关掉就再也看不到点完立刻复制到密码管理器十五常见报错速查报错现象原因解法依赖没装上构建命令改加部署成功但访问白页输出目录错必须是控制台输入焦点问题拆三段执行或后台进不去表没建全或绑定名写错查张表核对绑定后不生效没重试部署部署页手动重试一直是没匹配检查表达式与规则启用状态删图后链接还能打开缓存手动清缓存上传错重新用取负号保留上传权限不足设为管理员并开管理消息开始计费没设容量上限选了存储类设确认是十六这套方案适合谁适合个人博客笔记站文档站图片以中小尺寸截图为主日访问量在几万次以内愿意花分钟做一次性配置不适合需要的生产业务渠道没有可用性承诺且其服务条款明确禁止把服务当作文件托管或单文件经常超过这层会频繁触发分片日访问量稳定超过万次要么上付费计划要么让图片直接走公开域名十七最后一句实话这套方案的本质是用运维复杂度换成本它确实不花钱但换来的是三个长期不确定性随时可能变策略或被判定违规封所有图瞬间失效且无法申诉免费额度可能调整万次日不是承诺缓存的副作用要自己兜删图不即时生效这件事会一直存在所以真正重要的图片我还是会往那里放一份存的是图存的是底本文记录于项目版本与的政策和额度可能变化以官方文档为准',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-31 20:30:00',
+  postMainColor: '',
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#18171D')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#F7F9FE')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body data-type="anzhiyu"><div id="web_bg"></div><div id="an_music_bg"></div><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><img class="loading-img nolazyload" alt="加载头像" src="https://img.mote.nyc.mn/file/1743508695848_blog_touxiang.jpg"/><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.getElementById('loading-box').classList.add("loaded");
+  },
+  initLoading: () => {
+    document.getElementById('loading-box').classList.remove("loaded")
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+setTimeout(function(){preloader.endLoading();},10000)
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/anzhiyu-theme-static@1.1.10/progress_bar/progress_bar.min.css"/><script async="async" src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;:false,&quot;eventLag&quot;:false}"></script><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><div id="nav-group"><span id="blog_name"><div class="back-home-button"><i class="anzhiyufont anzhiyu-icon-grip-vertical"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">视频</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://space.bilibili.com/589400505" title="bilibili"><img class="back-menu-item-icon" src="https://img.mote.nyc.mn/file/1743582934800_blog_b站.jpg" alt="bilibili"/><span class="back-menu-item-text">bilibili</span></a><a class="back-menu-item" target="_blank" rel="noopener" href="https://www.tiktok.com/@Mote36.5/" title="tiktok"><img class="back-menu-item-icon" src="https://img.mote.nyc.mn/file/1743582666472_blog_tiktok.png" alt="tiktok"/><span class="back-menu-item-text">tiktok</span></a><a class="back-menu-item" target="_blank" rel="noopener" href="https://www.youtube.com/@mote521" title="youtube"><img class="back-menu-item-icon" src="https://img.mote.nyc.mn/file/1743583299250_blog_youtub.jpg" alt="youtube"/><span class="back-menu-item-text">youtube</span></a></div></div><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://img.mote.nyc.mn/" title="图床"><img class="back-menu-item-icon" src="https://img.mote.nyc.mn/file/1743583544399_blog_tuchuang.jpg" alt="图床"/><span class="back-menu-item-text">图床</span></a></div></div></div></div><a id="site-name" href="/" accesskey="h"><div class="title">Mote-blog</div><i class="anzhiyufont anzhiyu-icon-house-chimney"></i></a></span><div class="mask-name-container"><div id="name-container"><a id="page-name" href="javascript:anzhiyu.scrollToDest(0, 500)">PAGE_NAME</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 文章</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags faa-tada" style="font-size: 0.9em;"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/album/"><i class="anzhiyufont anzhiyu-icon-images faa-tada" style="font-size: 0.9em;"></i><span> 相册集</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 关于</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/about/"><i class="anzhiyufont anzhiyu-icon-paper-plane faa-tada" style="font-size: 0.9em;"></i><span> 关于本人</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/essay/"><i class="anzhiyufont anzhiyu-icon-lightbulb faa-tada" style="font-size: 0.9em;"></i><span> 闲言碎语</span></a></li><li><a class="site-page child faa-parent animated-hover" href="javascript:toRandomPost()"><i class="anzhiyufont anzhiyu-icon-shoe-prints1 faa-tada" style="font-size: 0.9em;"></i><span> 随便逛逛</span></a></li></ul></div></div></div><div id="nav-right"><div class="nav-button" id="randomPost_button"><a class="site-page" onclick="toRandomPost()" title="随机前往一个文章" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-dice"></i></a></div><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索🔍" accesskey="s"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span> 搜索</span></a></div><input id="center-console" type="checkbox"/><label class="widget" for="center-console" title="中控台" onclick="anzhiyu.switchConsole();"><i class="left"></i><i class="widget center"></i><i class="widget right"></i></label><div id="console"><div class="console-card-group-reward"><ul class="reward-all console-card"><li class="reward-item"><a href="https://img.mote.nyc.mn/file/1743563672049_blog_wechat.png" target="_blank"><img class="post-qr-code-img" alt="微信" src="https://img.mote.nyc.mn/file/1743563672049_blog_wechat.png"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img.mote.nyc.mn/file/1743563696519_blog_alipay.jpg" target="_blank"><img class="post-qr-code-img" alt="支付宝" src="https://img.mote.nyc.mn/file/1743563696519_blog_alipay.jpg"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments"><div class="card-content"><div class="author-content-item-tips">互动</div><span class="author-content-item-title"> 最新评论</span></div><div class="aside-list"><span>正在加载中...</span></div></div></div><div class="console-card-group-right"><div class="console-card tags"><div class="card-content"><div class="author-content-item-tips">兴趣点</div><span class="author-content-item-title">寻找你感兴趣的领域</span><div class="card-tags"><div class="item-headline"></div><div class="card-tag-cloud"><a href="/tags/Cloudflare/" style="font-size: 1.05rem;">Cloudflare<sup>1</sup></a><a href="/tags/R2/" style="font-size: 1.05rem;">R2<sup>1</sup></a><a href="/tags/Telegram/" style="font-size: 1.05rem;">Telegram<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 1.05rem;">图床<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%BB%BA%E6%9C%8D%E5%8A%A1/" style="font-size: 1.05rem;">自建服务<sup>1</sup></a><a href="/tags/%E8%87%AA%E6%88%91%E6%8F%90%E5%8D%87/" style="font-size: 1.05rem;">自我提升<sup>1</sup></a></div></div><hr/></div></div><div class="console-card history"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-box-archiv"></i><span>文章</span></div><div class="card-archives"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2026/10/"><span class="card-archive-list-date">十月 2026</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/04/"><span class="card-archive-list-date">四月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/09/"><span class="card-archive-list-date">九月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li></ul></div><hr/></div></div></div><div class="button-group"><div class="console-btn-item"><a class="darkmode_switchbutton" title="显示模式切换" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-moon"></i></a></div><div class="console-btn-item" id="consoleHideAside" onclick="anzhiyu.hideAsideBtn()" title="边栏显示控制"><a class="asideSwitch"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></a></div><div class="console-btn-item on" id="consoleCommentBarrage" onclick="anzhiyu.switchCommentBarrage()" title="热评开关"><a class="commentBarrage"><i class="anzhiyufont anzhiyu-icon-message"></i></a></div><div class="console-btn-item" id="consoleMusic" onclick="anzhiyu.musicToggle()" title="音乐开关"><a class="music-switch"><i class="anzhiyufont anzhiyu-icon-music"></i></a></div></div><div class="console-mask" onclick="anzhiyu.hideConsole()" href="javascript:void(0);"></div></div><div class="nav-button" id="nav-totop"><a class="totopbtn" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i><span id="percent" onclick="anzhiyu.scrollToDest(0,500)">0</span></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="切换"><i class="anzhiyufont anzhiyu-icon-bars"></i></a></div></div></div></nav><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original">原创</a><span class="post-meta-categories"><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-inbox post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/" itemprop="url">折腾记录</a></span><span class="article-meta tags"><a class="article-meta__tags" href="/tags/Cloudflare/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>Cloudflare</span></a><a class="article-meta__tags" href="/tags/%E5%9B%BE%E5%BA%8A/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>图床</span></a><a class="article-meta__tags" href="/tags/%E8%87%AA%E5%BB%BA%E6%9C%8D%E5%8A%A1/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>自建服务</span></a><a class="article-meta__tags" href="/tags/Telegram/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>Telegram</span></a><a class="article-meta__tags" href="/tags/R2/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>R2</span></a></span></div></div><h1 class="post-title" itemprop="name headline">零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="anzhiyufont anzhiyu-icon-calendar-days post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" itemprop="dateCreated datePublished" datetime="2026-10-31T12:30:00.000Z" title="发表于 2026-10-31 20:30:00">2026-10-31</time><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-history post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" itemprop="dateCreated datePublished" datetime="2026-10-31T12:30:00.000Z" title="更新于 2026-10-31 20:30:00">2026-10-31</time></span></div><div class="meta-secondline"><span class="post-meta-separator"></span><span class="post-meta-wordcount"><i class="anzhiyufont anzhiyu-icon-file-word post-meta-icon" title="文章字数"></i><span class="post-meta-label" title="文章字数">字数总计:</span><span class="word-count" title="文章字数">6.1k</span><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-clock post-meta-icon" title="阅读时长"></i><span class="post-meta-label" title="阅读时长">阅读时长:</span><span>21分钟</span></span><span class="post-meta-separator">       </span><span class="post-meta-position" title="作者IP属地为中国"><i class="anzhiyufont anzhiyu-icon-location-dot"></i>中国</span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section><div id="post-top-cover"><img class="nolazyload" id="post-top-bg" src="https://img.521126.xyz/file/1793444376407_imgbed.png"></div></header><main id="blog-container"><div class="layout" id="content-inner"><div id="post"><div class="post-ai-description"><div class="ai-title"><i class="anzhiyufont anzhiyu-icon-bilibili"></i><div class="ai-title-text">AI-摘要</div><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right"></i><i class="anzhiyufont anzhiyu-icon-circle-dot" title="朗读摘要"></i><div id="ai-tag">AnZhiYu GPT</div></div><div class="ai-explanation">AI初始化中...</div><div class="ai-btn-box"><div class="ai-btn-item">介绍自己 🙈</div><div class="ai-btn-item">生成本文简介 👋</div><div class="ai-btn-item">推荐相关文章 📖</div><div class="ai-btn-item">前往主页 🏠</div><div class="ai-btn-item" id="go-tianli-blog">前往爱发电购买</div></div><script data-pjax src="/js/anzhiyu/ai_abstract.js"></script></div><article class="post-content" id="article-container" itemscope itemtype="http://blog521126.xyz/2026/10/31/cloudflare-imgbed/"><header><a class="post-meta-categories" href="/categories/%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/" itemprop="url">折腾记录</a><a href="/tags/Cloudflare/" tabindex="-1" itemprop="url">Cloudflare</a><a href="/tags/%E5%9B%BE%E5%BA%8A/" tabindex="-1" itemprop="url">图床</a><a href="/tags/%E8%87%AA%E5%BB%BA%E6%9C%8D%E5%8A%A1/" tabindex="-1" itemprop="url">自建服务</a><a href="/tags/Telegram/" tabindex="-1" itemprop="url">Telegram</a><a href="/tags/R2/" tabindex="-1" itemprop="url">R2</a><h1 id="CrawlerTitle" itemprop="name headline">零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战</h1><span itemprop="author" itemscope itemtype="http://schema.org/Person">Mote</span><time itemprop="dateCreated datePublished" datetime="2026-10-31T12:30:00.000Z" title="发表于 2026-10-31 20:30:00">2026-10-31</time><time itemprop="dateCreated datePublished" datetime="2026-10-31T12:30:00.000Z" title="更新于 2026-10-31 20:30:00">2026-10-31</time></header><div class="video-container">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/sxYl6IyOlC4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
+<style>
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+}
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+</style>
+
+<p>写博客的人都绕不开一个问题：图片存哪。</p>
+<p>用第三方图床，怕运营方跑路、怕忽然收费限速；把图片直接提交进 Git 仓库，几十篇文章下来仓库能到几百 MB，克隆一次等半天。而自己买服务器跑图床，为了几张截图付一整台 VPS，怎么算都不划算。</p>
+<p>这篇记录一套我实际跑通的方案：<strong>Cloudflare Pages 托管 + D1 存元数据 + Telegram 存文件 + R2 兜底</strong>，全程只用免费额度，不买服务器、不用备案、不付流量费。</p>
+<p>视频版在这里，跟着操作更直观：<a target="_blank" rel="noopener" href="https://youtu.be/sxYl6IyOlC4">https://youtu.be/sxYl6IyOlC4</a></p>
+<p>下面把完整的项目地址、全部初始化 SQL、每一处界面路径和踩过的坑都写清楚，照着做就能复刻。</p>
+<span id="more"></span>
+
+<h2 id="零、先说项目地址"><a href="#零、先说项目地址" class="headerlink" title="零、先说项目地址"></a>零、先说项目地址</h2><p>本文用的开源项目是 <strong>CloudFlare ImgBed</strong>，MIT 协议，本文写作时版本 <strong>v2.7.8</strong>，约 6.8k star。</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GitHub 仓库</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/MarSeventh/CloudFlare-ImgBed">https://github.com/MarSeventh/CloudFlare-ImgBed</a></td>
+</tr>
+<tr>
+<td>官方文档</td>
+<td><a target="_blank" rel="noopener" href="https://cfbed.sanyue.de/">https://cfbed.sanyue.de/</a></td>
+</tr>
+<tr>
+<td>初始化 SQL 原始文件</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/MarSeventh/CloudFlare-ImgBed/blob/main/database/init.sql">https://github.com/MarSeventh/CloudFlare-ImgBed/blob/main/database/init.sql</a></td>
+</tr>
+</tbody></table>
+<p>它有四个关键特性，决定了它值得折腾：</p>
+<ol>
+<li><strong>元数据与文件解耦</strong> —— 数据库只存 file_id、路径、标签，真实文件写进外部存储渠道</li>
+<li><strong>支持六种存储后端</strong> —— Telegram、Cloudflare R2、S3 兼容、Discord、Hugging Face、WebDAV</li>
+<li><strong>同构内核</strong> —— 同一套代码可跑在 Pages、Workers、Docker 三种运行时</li>
+<li><strong>多渠道负载均衡 + 失败自动切换</strong></li>
+</ol>
+<p>下面所有配置都以 v2.7.8 为准。版本差异主要在后台菜单位置，参数名基本稳定。</p>
+<h2 id="一、为什么自建图床"><a href="#一、为什么自建图床" class="headerlink" title="一、为什么自建图床"></a>一、为什么自建图床</h2><p>理想方案得同时满足四个条件：容量足够大、长期不花钱、链接稳定、能自己管。</p>
+<p>主流选择其实就三个方向：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>免费额度</th>
+<th>主要短板</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cloudflare R2</td>
+<td>10 GB 存储，出网全免费</td>
+<td>需要绑卡，容量是硬上限</td>
+</tr>
+<tr>
+<td>Telegram 频道</td>
+<td>容量近似无限</td>
+<td>单文件 20 MB，无 SLA，条款灰色</td>
+</tr>
+<tr>
+<td>大厂对象存储</td>
+<td>新用户试用额度</td>
+<td>试用期结束按量计费，出网费贵</td>
+</tr>
+</tbody></table>
+<p>单独用任何一个都有明显缺陷。但这三个的短板恰好能互补——<strong>Telegram 出容量，R2 出稳定性，Cloudflare 出访问入口</strong>。</p>
+<h2 id="二、架构：四层各司其职"><a href="#二、架构：四层各司其职" class="headerlink" title="二、架构：四层各司其职"></a>二、架构：四层各司其职</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">浏览器 / PicGo</span><br><span class="line">      │</span><br><span class="line">      ▼</span><br><span class="line">Cloudflare Pages（Functions 边缘函数）</span><br><span class="line">      │  ← 域名、鉴权、缓存、图片尺寸处理</span><br><span class="line">      ├──────────► D1 数据库（元数据：文件名、路径、file_id）</span><br><span class="line">      │</span><br><span class="line">      └──────────► 存储渠道</span><br><span class="line">                     ├─ Telegram 频道（主力，容量无限）</span><br><span class="line">                     └─ R2 存储桶（兜底，稳定 + 大文件）</span><br></pre></td></tr></table></figure>
+
+<p>关键设计是<strong>元数据与文件解耦</strong>：数据库里只存「谁、什么时候、存在哪个渠道的哪个 ID」，真实文件躺在 Telegram 或 R2 里。</p>
+<p>两个直接好处：</p>
+<ol>
+<li>换存储后端不影响已有链接 —— 链接永远是 <code>你的域名/file/xxx</code>，跟后端无关</li>
+<li>可配多渠道，上传失败自动切换</li>
+</ol>
+<p><strong>一个必须提前说清的认知</strong>：这套方案的「兜底」发生在<strong>上传时</strong>，不是读取时，也<strong>不做双写</strong>。</p>
+<ul>
+<li>✅ Telegram 上传失败（超 20 MB、限流、抖动）时自动重试并落到 R2</li>
+<li>❌ 已存进 Telegram 的图不会自动复制到 R2，Telegram 出问题时这部分仍然会挂</li>
+</ul>
+<p>理解这一点，后面的配置才有意义。</p>
+<h2 id="三、免费额度到底有多少"><a href="#三、免费额度到底有多少" class="headerlink" title="三、免费额度到底有多少"></a>三、免费额度到底有多少</h2><p>先把账算清楚，这是整套方案成不成立的前提。</p>
+<table>
+<thead>
+<tr>
+<th>资源</th>
+<th>免费额度</th>
+<th>折算成实际用量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Telegram 频道</td>
+<td>无官方配额</td>
+<td>按 300 KB 一张，几十万张量级</td>
+</tr>
+<tr>
+<td>Telegram 单文件</td>
+<td>20 MB（Bot API 下载上限）</td>
+<td>超出自动分片</td>
+</tr>
+<tr>
+<td>R2 存储</td>
+<td>10 GB-month &#x2F; 月</td>
+<td>约 3.5 万张 300 KB 图</td>
+</tr>
+<tr>
+<td>R2 出网流量</td>
+<td><strong>无限免费</strong></td>
+<td>相对 S3 最大的优势</td>
+</tr>
+<tr>
+<td>R2 读操作（B 类）</td>
+<td>1000 万次 &#x2F; 月</td>
+<td>约 33 万次&#x2F;天</td>
+</tr>
+<tr>
+<td>R2 写操作（A 类）</td>
+<td>100 万次 &#x2F; 月</td>
+<td>约 3.3 万次&#x2F;天</td>
+</tr>
+<tr>
+<td>Pages Functions 请求</td>
+<td>10 万次 &#x2F; 天</td>
+<td>未命中缓存时有效</td>
+</tr>
+<tr>
+<td>Pages Functions CPU</td>
+<td>10 ms &#x2F; 次</td>
+<td>图片处理要注意</td>
+</tr>
+<tr>
+<td>D1 存储</td>
+<td>500 MB &#x2F; 库</td>
+<td>元数据每条几百字节，够存几十万条</td>
+</tr>
+<tr>
+<td>D1 写入</td>
+<td>10 万行 &#x2F; 天</td>
+<td>每张图 1–2 行</td>
+</tr>
+<tr>
+<td>KV（不推荐）</td>
+<td>读 10 万 &#x2F; 日、<strong>写 1000 &#x2F; 日</strong></td>
+<td>写入是硬伤</td>
+</tr>
+</tbody></table>
+<p>结论很清楚：<strong>存储不是瓶颈，请求才是</strong>。图片一旦被 CDN 缓存命中，就不再消耗 Functions 额度——所以缓存配置得好不好，直接决定这套图床能扛多少访问。</p>
+<h2 id="四、前置准备"><a href="#四、前置准备" class="headerlink" title="四、前置准备"></a>四、前置准备</h2><h3 id="4-1-账号清单"><a href="#4-1-账号清单" class="headerlink" title="4.1 账号清单"></a>4.1 账号清单</h3><ul>
+<li><input disabled="" type="checkbox"> Cloudflare 账号，且<strong>已绑定支付方式</strong>（R2 必须绑卡才能开通，绑卡不等于收费）</li>
+<li><input disabled="" type="checkbox"> 一个<strong>已托管在 Cloudflare</strong> 的域名（NS 指向 CF，状态 Active）——图片尺寸处理依赖它，<code>pages.dev</code> 不支持</li>
+<li><input disabled="" type="checkbox"> GitHub 账号</li>
+<li><input disabled="" type="checkbox"> Telegram 账号</li>
+</ul>
+<h3 id="4-2-Telegram：拿-Bot-Token-和-Chat-ID"><a href="#4-2-Telegram：拿-Bot-Token-和-Chat-ID" class="headerlink" title="4.2 Telegram：拿 Bot Token 和 Chat ID"></a>4.2 Telegram：拿 Bot Token 和 Chat ID</h3><p><strong>第一步，建 Bot</strong></p>
+<ol>
+<li>Telegram 搜索 <code>@BotFather</code>（认准蓝色勾）</li>
+<li>发送 <code>/newbot</code></li>
+<li>输入 Bot 显示名（随意，如 <code>MyImgBed</code>）</li>
+<li>输入用户名（<strong>必须以 <code>bot</code> 结尾</strong>，全局唯一，如 <code>myimgbed_2026_bot</code>）</li>
+<li>它会回复一段：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Use this token to access the HTTP API:</span><br><span class="line">7836972004:AAHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+<p>那串 <code>数字:字母</code> 就是 <strong>Bot Token</strong>，只显示一次，立刻存好。</p>
+<blockquote>
+<p>⚠️ Token 等于 Bot 的完全控制权。如果截图发过群、贴过论坛，去 BotFather 发 <code>/revoke</code> 换一个，旧 Token 立即作废。</p>
+</blockquote>
+<p><strong>第二步，建私有频道</strong></p>
+<ol>
+<li>Telegram → 新建消息 → 新建频道</li>
+<li>名称随意，如 <code>图床存储</code></li>
+<li><strong>关键：选「私密频道 &#x2F; Private Channel」</strong>，不要选公开</li>
+<li>建好后进频道 → 点频道名 → 管理员 → 添加管理员 → 搜索你刚建的 Bot 用户名 → 添加</li>
+<li>权限开关里把 <strong>「管理消息 &#x2F; Manage Messages」打开</strong></li>
+</ol>
+<blockquote>
+<p>Bot 没有这个权限，上传会报 <code>not enough rights</code>，这个报错不会告诉你是权限问题。</p>
+</blockquote>
+<p><strong>第三步，拿 Chat ID</strong></p>
+<ol>
+<li>在频道里发一条测试消息（打个 <code>test</code>）</li>
+<li>长按该消息 → 转发 → 转发给 <code>@VersaToolsBot</code></li>
+<li>它返回一串形如 <code>-1001234567890</code> 的数字</li>
+</ol>
+<p><strong>前面的负号必须保留</strong>，少一个负号后面必然失败。</p>
+<h3 id="4-3-R2：建桶"><a href="#4-3-R2：建桶" class="headerlink" title="4.3 R2：建桶"></a>4.3 R2：建桶</h3><ol>
+<li>Dashboard → 左侧 <strong>R2 对象存储</strong> → 首次进入需同意条款并启用</li>
+<li><strong>创建存储桶</strong></li>
+<li>Bucket name 全局唯一，如 <code>imgbed-mote2026</code></li>
+<li>Location 选 <code>Automatic</code></li>
+<li><strong>Default storage class 必须是 <code>Standard</code></strong></li>
+</ol>
+<blockquote>
+<p>⚠️ 千万别选 <strong>Infrequent Access</strong> —— 它<strong>不享受 10 GB 免费额度</strong>，还会收数据取回费。</p>
+</blockquote>
+<p>公开访问（Public access）<strong>先不用开</strong>。<code>r2.dev</code> 那个默认域名有速率限制，正式用要绑自定义域名，等最后一起处理。</p>
+<h2 id="五、Pages-部署"><a href="#五、Pages-部署" class="headerlink" title="五、Pages 部署"></a>五、Pages 部署</h2><h3 id="5-1-Fork-仓库"><a href="#5-1-Fork-仓库" class="headerlink" title="5.1 Fork 仓库"></a>5.1 Fork 仓库</h3><p>打开 <a target="_blank" rel="noopener" href="https://github.com/MarSeventh/CloudFlare-ImgBed">https://github.com/MarSeventh/CloudFlare-ImgBed</a> → 右上角 <strong>Fork</strong> → <strong>Create fork</strong> → 分支保持 <code>main</code>。</p>
+<h3 id="5-2-创建-Pages-项目"><a href="#5-2-创建-Pages-项目" class="headerlink" title="5.2 创建 Pages 项目"></a>5.2 创建 Pages 项目</h3><ol>
+<li>Cloudflare Dashboard → <strong>计算和 AI（Compute）</strong> → <strong>Workers &amp; Pages</strong></li>
+<li><strong>创建</strong> → 页面下拉找到 <code>Looking to deploy Pages?</code> → <strong>Get started</strong></li>
+<li>选 <strong>导入现有 Git 存储库</strong></li>
+<li>首次会让你授权 GitHub，选「Only select repositories」，只授权 fork 的那个仓库</li>
+</ol>
+<h3 id="5-3-构建配置（这四项决定成败）"><a href="#5-3-构建配置（这四项决定成败）" class="headerlink" title="5.3 构建配置（这四项决定成败）"></a>5.3 构建配置（这四项决定成败）</h3><table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>必须填</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>项目名称</td>
+<td><code>cloudflare-imgbed</code>（随意）</td>
+</tr>
+<tr>
+<td>生产分支</td>
+<td><code>main</code></td>
+</tr>
+<tr>
+<td><strong>构建命令</strong></td>
+<td><code>npm install</code></td>
+</tr>
+<tr>
+<td><strong>构建输出目录</strong></td>
+<td><code>frontend-dist</code></td>
+</tr>
+<tr>
+<td>根目录（Root directory）</td>
+<td><strong>留空</strong></td>
+</tr>
+</tbody></table>
+<p><strong>坑位一：构建命令不是 <code>npm run build</code></strong></p>
+<p>项目从 v2.0 起改了构建方式。更要命的是，这个仓库<strong>根目录的 <code>package.json</code> 里没有任何 <code>dependencies</code></strong>，依赖全部放在 workspace 子包 <code>deploy/profiles/common</code> 里，靠 <code>&quot;workspaces&quot;: [&quot;deploy/profiles/*&quot;]</code> 提升上来。</p>
+<p>所以只要 <code>npm install</code> 没有真正执行，<code>node_modules</code> 就是空的，Pages 打包 Functions 时会一口气报十个错：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ERROR Could not resolve &quot;@aws-sdk/client-s3&quot;</span><br><span class="line">ERROR Could not resolve &quot;hono&quot;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p><code>aws-sdk</code> 只是第一个被打印出来的。<strong>看到这个错，不要去装某个具体的包，回去检查构建命令。</strong></p>
+<p>另一个判断依据是时间：从开始构建到报错只用了 7 秒。真正跑完一次 <code>npm install</code> 不可能这么快，说明安装环节被整个跳过了。</p>
+<p>三种常见错法，表现完全一样：</p>
+<ul>
+<li>构建命令<strong>留空</strong>（Pages 不会替你装 workspace 依赖）</li>
+<li>填 <code>npm ci</code>（没有 lockfile，直接失败）</li>
+<li>填 <code>npm run build</code>（这仓库根本没有 build 脚本）</li>
+</ul>
+<p>补一个保险措施：<strong>设置 → 变量和机密 → 添加</strong> <code>NODE_VERSION=22</code>。因为 npm 7 以前不认识 <code>workspaces</code> 字段，会把子包依赖全部忽略，报错一模一样。</p>
+<h3 id="5-4-首次部署与预期现象"><a href="#5-4-首次部署与预期现象" class="headerlink" title="5.4 首次部署与预期现象"></a>5.4 首次部署与预期现象</h3><p>点 <strong>保存并部署</strong>，等 2–3 分钟，会给你一个 <code>xxx.pages.dev</code> 域名。</p>
+<p><strong>这时候打开它大概率是白页或报错——这是正常的</strong>，数据库还没绑。环境变量一个都不用填，v2.0 之后所有业务配置都在后台。</p>
+<blockquote>
+<p>📌 注意：构建成功后会给你两个域名，形如 <code>97b78886.项目名.pages.dev</code> 和 <code>项目名.pages.dev</code>。<strong>前面带哈希的是单次部署的预览域名，每次重新部署都会变</strong>。以后一律用不带哈希的生产域名，否则某次部署后旧链接就 404 了。</p>
+</blockquote>
+<h2 id="六、D1-数据库（附完整-SQL）"><a href="#六、D1-数据库（附完整-SQL）" class="headerlink" title="六、D1 数据库（附完整 SQL）"></a>六、D1 数据库（附完整 SQL）</h2><h3 id="6-1-建库"><a href="#6-1-建库" class="headerlink" title="6.1 建库"></a>6.1 建库</h3><p>Dashboard → <strong>存储和数据库</strong> → <strong>D1 SQL 数据库</strong> → <strong>创建数据库</strong> → 名称填 <code>img_d1</code> → 创建。</p>
+<h3 id="6-2-初始化表结构"><a href="#6-2-初始化表结构" class="headerlink" title="6.2 初始化表结构"></a>6.2 初始化表结构</h3><p>点进 <code>img_d1</code> → 上方切 <strong>控制台（Console）</strong> → 粘贴 SQL → 执行。</p>
+<p><strong>坑位二：整段粘贴会提示 <code>No SQL statements detected.</code></strong></p>
+<p>原因是控制台的输入焦点问题——内容看着在框里，但点击执行时读的是空内容。另外从某些编辑器复制时还会丢掉换行，整段挤成一行，一旦某条语句语法错误就很难定位。</p>
+<p>**解决办法：拆成三段，按顺序各执行一次。**下面是可以直接复制的完整内容。</p>
+<h4 id="第一段：5-张表"><a href="#第一段：5-张表" class="headerlink" title="第一段：5 张表"></a>第一段：5 张表</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> files (</span><br><span class="line">    id TEXT <span class="keyword">PRIMARY KEY</span>,</span><br><span class="line">    <span class="keyword">value</span> TEXT,</span><br><span class="line">    metadata TEXT <span class="keyword">NOT NULL</span>,</span><br><span class="line">    file_name TEXT,</span><br><span class="line">    file_type TEXT,</span><br><span class="line">    file_size TEXT,</span><br><span class="line">    upload_ip TEXT,</span><br><span class="line">    upload_address TEXT,</span><br><span class="line">    list_type TEXT,</span><br><span class="line">    <span class="type">timestamp</span> <span class="type">INTEGER</span>,</span><br><span class="line">    label TEXT,</span><br><span class="line">    directory TEXT,</span><br><span class="line">    channel TEXT,</span><br><span class="line">    channel_name TEXT,</span><br><span class="line">    tg_file_id TEXT,</span><br><span class="line">    tg_chat_id TEXT,</span><br><span class="line">    tg_bot_token TEXT,</span><br><span class="line">    is_chunked <span class="type">BOOLEAN</span> <span class="keyword">DEFAULT</span> <span class="literal">FALSE</span>,</span><br><span class="line">    tags TEXT,</span><br><span class="line">    created_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">    updated_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE TABLE</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> settings (</span><br><span class="line">    key TEXT <span class="keyword">PRIMARY KEY</span>,</span><br><span class="line">    <span class="keyword">value</span> TEXT <span class="keyword">NOT NULL</span>,</span><br><span class="line">    category TEXT,</span><br><span class="line">    description TEXT,</span><br><span class="line">    created_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">    updated_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE TABLE</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> index_operations (</span><br><span class="line">    id TEXT <span class="keyword">PRIMARY KEY</span>,</span><br><span class="line">    type TEXT <span class="keyword">NOT NULL</span>,</span><br><span class="line">    <span class="type">timestamp</span> <span class="type">INTEGER</span> <span class="keyword">NOT NULL</span>,</span><br><span class="line">    data TEXT <span class="keyword">NOT NULL</span>,</span><br><span class="line">    processed <span class="type">BOOLEAN</span> <span class="keyword">DEFAULT</span> <span class="literal">FALSE</span>,</span><br><span class="line">    created_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE TABLE</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> index_metadata (</span><br><span class="line">    key TEXT <span class="keyword">PRIMARY KEY</span>,</span><br><span class="line">    last_updated <span class="type">INTEGER</span>,</span><br><span class="line">    total_count <span class="type">INTEGER</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,</span><br><span class="line">    last_operation_id TEXT,</span><br><span class="line">    chunk_count <span class="type">INTEGER</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,</span><br><span class="line">    chunk_size <span class="type">INTEGER</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,</span><br><span class="line">    created_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">    updated_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE TABLE</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> other_data (</span><br><span class="line">    key TEXT <span class="keyword">PRIMARY KEY</span>,</span><br><span class="line">    <span class="keyword">value</span> TEXT <span class="keyword">NOT NULL</span>,</span><br><span class="line">    type TEXT,</span><br><span class="line">    description TEXT,</span><br><span class="line">    created_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">    updated_at DATETIME <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h4 id="第二段：12-个索引"><a href="#第二段：12-个索引" class="headerlink" title="第二段：12 个索引"></a>第二段：12 个索引</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_files_timestamp <span class="keyword">ON</span> files(<span class="type">timestamp</span> <span class="keyword">DESC</span>);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_files_directory <span class="keyword">ON</span> files(directory);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_files_channel <span class="keyword">ON</span> files(channel);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_files_file_type <span class="keyword">ON</span> files(file_type);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_files_upload_ip <span class="keyword">ON</span> files(upload_ip);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_files_created_at <span class="keyword">ON</span> files(created_at <span class="keyword">DESC</span>);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_files_tags <span class="keyword">ON</span> files(tags);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_settings_category <span class="keyword">ON</span> settings(category);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_index_operations_timestamp <span class="keyword">ON</span> index_operations(<span class="type">timestamp</span>);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_index_operations_processed <span class="keyword">ON</span> index_operations(processed);</span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_index_operations_type <span class="keyword">ON</span> index_operations(type);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> INDEX IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> idx_other_data_type <span class="keyword">ON</span> other_data(type);</span><br></pre></td></tr></table></figure>
+
+<h4 id="第三段：4-个触发器"><a href="#第三段：4-个触发器" class="headerlink" title="第三段：4 个触发器"></a>第三段：4 个触发器</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TRIGGER</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> update_files_updated_at</span><br><span class="line">    AFTER <span class="keyword">UPDATE</span> <span class="keyword">ON</span> files</span><br><span class="line">    <span class="keyword">BEGIN</span></span><br><span class="line">        <span class="keyword">UPDATE</span> files <span class="keyword">SET</span> updated_at <span class="operator">=</span> <span class="built_in">CURRENT_TIMESTAMP</span> <span class="keyword">WHERE</span> id <span class="operator">=</span> NEW.id;</span><br><span class="line">    <span class="keyword">END</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TRIGGER</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> update_settings_updated_at</span><br><span class="line">    AFTER <span class="keyword">UPDATE</span> <span class="keyword">ON</span> settings</span><br><span class="line">    <span class="keyword">BEGIN</span></span><br><span class="line">        <span class="keyword">UPDATE</span> settings <span class="keyword">SET</span> updated_at <span class="operator">=</span> <span class="built_in">CURRENT_TIMESTAMP</span> <span class="keyword">WHERE</span> key <span class="operator">=</span> NEW.key;</span><br><span class="line">    <span class="keyword">END</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TRIGGER</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> update_index_metadata_updated_at</span><br><span class="line">    AFTER <span class="keyword">UPDATE</span> <span class="keyword">ON</span> index_metadata</span><br><span class="line">    <span class="keyword">BEGIN</span></span><br><span class="line">        <span class="keyword">UPDATE</span> index_metadata <span class="keyword">SET</span> updated_at <span class="operator">=</span> <span class="built_in">CURRENT_TIMESTAMP</span> <span class="keyword">WHERE</span> key <span class="operator">=</span> NEW.key;</span><br><span class="line">    <span class="keyword">END</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TRIGGER</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> update_other_data_updated_at</span><br><span class="line">    AFTER <span class="keyword">UPDATE</span> <span class="keyword">ON</span> other_data</span><br><span class="line">    <span class="keyword">BEGIN</span></span><br><span class="line">        <span class="keyword">UPDATE</span> other_data <span class="keyword">SET</span> updated_at <span class="operator">=</span> <span class="built_in">CURRENT_TIMESTAMP</span> <span class="keyword">WHERE</span> key <span class="operator">=</span> NEW.key;</span><br><span class="line">    <span class="keyword">END</span>;</span><br></pre></td></tr></table></figure>
+
+<p>全部带 <code>IF NOT EXISTS</code>，重复执行安全，缺表就再跑一遍。</p>
+<p><strong>执行时的三个要点</strong>：</p>
+<ol>
+<li>先<strong>单击</strong>编辑框，看到光标在里面，再 <code>Ctrl+A</code> → <code>Ctrl+V</code>，确认内容真的在框里</li>
+<li>用 <code>Ctrl+Enter</code> 直接执行，比点按钮更可靠</li>
+<li>每段成功的标志是出现 <code>Executed N statements</code> 之类的提示</li>
+</ol>
+<h4 id="验证表是否建好"><a href="#验证表是否建好" class="headerlink" title="验证表是否建好"></a>验证表是否建好</h4><p>切到 <strong>表（Tables）</strong> 标签，或者执行这条查询：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> name <span class="keyword">FROM</span> sqlite_master <span class="keyword">WHERE</span> type <span class="operator">=</span> <span class="string">&#x27;table&#x27;</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> name;</span><br></pre></td></tr></table></figure>
+
+<p>应该返回 5 行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">files</span><br><span class="line">index_metadata</span><br><span class="line">index_operations</span><br><span class="line">other_data</span><br><span class="line">settings</span><br></pre></td></tr></table></figure>
+
+<p>（可能额外多一个 <code>_cf_KV</code>，那是 Cloudflare 自带的内部表，每个 D1 都有，不影响使用。）</p>
+<h4 id="命令行方案（控制台始终不认时的备选）"><a href="#命令行方案（控制台始终不认时的备选）" class="headerlink" title="命令行方案（控制台始终不认时的备选）"></a>命令行方案（控制台始终不认时的备选）</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx wrangler d1 execute img_d1 --remote --file=./init.sql</span><br></pre></td></tr></table></figure>
+
+<p>首次会要浏览器登录授权 Cloudflare 账号，之后一条命令跑完全部建表。</p>
+<h3 id="6-3-为什么必须用-D1，不用-KV"><a href="#6-3-为什么必须用-D1，不用-KV" class="headerlink" title="6.3 为什么必须用 D1，不用 KV"></a>6.3 为什么必须用 D1，不用 KV</h3><p>这是硬性依赖，不能省。图片实体存在 Telegram &#x2F; R2 里，但<strong>文件名、路径、file_id、标签、上传时间这些信息必须存在数据库里</strong>。没有数据库，Telegram 返回的 <code>file_id</code> 无处保存，下次访问就找不到图，上传接口直接报 500。</p>
+<p>选哪个数据库是可以选的：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>KV</td>
+<td>能用，但每天只有 <strong>1000 次写入</strong>（等于每天最多传 1000 张），且<strong>不支持大文件上传</strong></td>
+</tr>
+<tr>
+<td><strong>D1</strong></td>
+<td>推荐，免费 500 MB，支持大文件，性能略差但对图床无感</td>
+</tr>
+</tbody></table>
+<h3 id="6-4-绑定（变量名写死，不能错）"><a href="#6-4-绑定（变量名写死，不能错）" class="headerlink" title="6.4 绑定（变量名写死，不能错）"></a>6.4 绑定（变量名写死，不能错）</h3><p>Pages 项目 → <strong>设置（Settings）</strong> → <strong>绑定（Bindings）</strong> → <strong>添加</strong> → 选 <strong>D1 数据库</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>变量名称</td>
+<td><code>img_d1</code></td>
+</tr>
+<tr>
+<td>D1 数据库</td>
+<td><code>img_d1</code></td>
+</tr>
+</tbody></table>
+<p><strong>坑位三：绑定变量名是代码里写死的</strong></p>
+<table>
+<thead>
+<tr>
+<th>绑定类型</th>
+<th>变量名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>D1 数据库</td>
+<td><code>img_d1</code></td>
+<td>必填</td>
+</tr>
+<tr>
+<td>R2 存储桶</td>
+<td><code>img_r2</code></td>
+<td>必填</td>
+</tr>
+<tr>
+<td>KV 命名空间</td>
+<td><code>img_url</code></td>
+<td>用 D1 时不需要</td>
+</tr>
+</tbody></table>
+<p>写错不会报”变量名不正确”，而是应用启动失败或后台进不去，报错信息毫无指向性。<strong>这三个名字建议直接抄。</strong></p>
+<h3 id="6-5-必须手动「重试部署」"><a href="#6-5-必须手动「重试部署」" class="headerlink" title="6.5 必须手动「重试部署」"></a>6.5 必须手动「重试部署」</h3><p>绑定本身<strong>不会触发构建</strong>。改完设置回 <strong>部署（Deployments）</strong> → 最新那条 → <code>...</code> → <strong>重试部署</strong>，等 1–2 分钟。</p>
+<p>不重试，代码里读不到新绑定。</p>
+<h2 id="七、绑定-R2"><a href="#七、绑定-R2" class="headerlink" title="七、绑定 R2"></a>七、绑定 R2</h2><p>Pages 项目 → <strong>设置</strong> → <strong>绑定</strong> → <strong>添加</strong> → <strong>R2 存储桶</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>变量名称</td>
+<td><code>img_r2</code></td>
+</tr>
+<tr>
+<td>R2 存储桶</td>
+<td><code>imgbed-mote2026</code>（你的桶名）</td>
+</tr>
+</tbody></table>
+<p>保存 → 回 <strong>部署</strong> → 重试部署。</p>
+<p>绑成功后回后台 <strong>系统设置 → 上传设置</strong>，应该能看到 <strong>Cloudflare R2</strong> 这一栏自动出现（显示为 <code>R2_env</code>），说明变量名读对了。</p>
+<h2 id="八、后台配置"><a href="#八、后台配置" class="headerlink" title="八、后台配置"></a>八、后台配置</h2><p>访问 <code>https://你的域名/dashboard</code>（老版本是 <code>/systemConfig</code>），管理端<strong>默认免密</strong>。</p>
+<h3 id="8-1-第一件事：设密码"><a href="#8-1-第一件事：设密码" class="headerlink" title="8.1 第一件事：设密码"></a>8.1 第一件事：设密码</h3><p>现在任何人知道域名就能进后台删你的图。立刻去 <strong>系统设置 → 安全设置 → 认证管理</strong>，设两套：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>管理端认证（用户名 + 密码）</td>
+<td>登录 <code>/dashboard</code> 后台</td>
+</tr>
+<tr>
+<td>用户端认证（上传认证码）</td>
+<td>登录 <code>/login</code>、PicGo 和 API 调用</td>
+</tr>
+</tbody></table>
+<p>这两套是独立的，别搞混：<strong>管理员密码管后台，上传认证码管传图。</strong></p>
+<h3 id="8-2-配-Telegram-渠道"><a href="#8-2-配-Telegram-渠道" class="headerlink" title="8.2 配 Telegram 渠道"></a>8.2 配 Telegram 渠道</h3><p><strong>系统设置 → 上传设置 → Telegram 渠道 → 添加渠道</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>填什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>渠道名称</td>
+<td><code>TG-主渠道</code></td>
+</tr>
+<tr>
+<td>Bot Token</td>
+<td>第 4.2 步拿到的 Token</td>
+</tr>
+<tr>
+<td>Chat ID</td>
+<td><code>-100...</code>（负号保留）</td>
+</tr>
+<tr>
+<td>代理 URL</td>
+<td>留空（CF 边缘通常能直连）</td>
+</tr>
+<tr>
+<td>启用状态</td>
+<td>打开</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-配-R2-渠道"><a href="#8-3-配-R2-渠道" class="headerlink" title="8.3 配 R2 渠道"></a>8.3 配 R2 渠道</h3><p>在 <strong>Cloudflare R2</strong> 区域点 <code>R2_env</code> 卡片上的 <strong>编辑</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>容量上限</td>
+<td><code>9.5</code>（GB）</td>
+</tr>
+<tr>
+<td>公开访问链接</td>
+<td>留空（不开图片审查就不需要）</td>
+</tr>
+</tbody></table>
+<p><strong>这个上限一定要设。</strong> 不设就是无限额开放，某天误传一堆大图就开始计费了。设 9.5 而不是 10，是留 5% 余量——计费按 GB-month 计算，卡边容易踩线。</p>
+<h3 id="8-4-设默认渠道"><a href="#8-4-设默认渠道" class="headerlink" title="8.4 设默认渠道"></a>8.4 设默认渠道</h3><p><strong>系统设置 → 网页设置 → 客户端设置</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>选</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>默认渠道类型</td>
+<td><code>Telegram</code></td>
+</tr>
+<tr>
+<td>默认渠道名称</td>
+<td><code>TG-主渠道</code></td>
+</tr>
+</tbody></table>
+<h3 id="8-5-负载均衡保持关闭"><a href="#8-5-负载均衡保持关闭" class="headerlink" title="8.5 负载均衡保持关闭"></a>8.5 负载均衡保持关闭</h3><p>R2 卡片和 S3 卡片右上角都有 <strong>负载均衡</strong> 开关，<strong>保持关闭</strong>。</p>
+<p>理由：兜底渠道一旦参与日常分流，就不叫兜底了——R2 那 10 GB 会被日常小图慢慢吃掉。</p>
+<h2 id="九、验证：三个必测项"><a href="#九、验证：三个必测项" class="headerlink" title="九、验证：三个必测项"></a>九、验证：三个必测项</h2><p>部署完不能只看页面能打开，要验证三条链路。</p>
+<h3 id="9-1-上传落点"><a href="#9-1-上传落点" class="headerlink" title="9.1 上传落点"></a>9.1 上传落点</h3><p>新开标签打开 <code>https://你的域名/</code> → 用上传认证码登录 → 传一张小图。</p>
+<p>两个验证点：</p>
+<ul>
+<li>文件卡片渠道显示 <strong>Telegram</strong></li>
+<li>打开 Telegram 私有频道，<strong>能看到这张图</strong></li>
+</ul>
+<p>第二点是<strong>最硬的验证</strong> —— 它同时证明 Bot 有发消息权限、Chat ID 正确、Token 有效。三样错任何一个，上传都会失败并提示 <code>chat not found</code> 或 <code>not enough rights</code>。</p>
+<h3 id="9-2-R2-通道本身可用"><a href="#9-2-R2-通道本身可用" class="headerlink" title="9.2 R2 通道本身可用"></a>9.2 R2 通道本身可用</h3><p>上传时把渠道下拉手动切到 <strong>Cloudflare R2</strong>，传一张。</p>
+<p>三个验证点：</p>
+<ul>
+<li>卡片渠道显示 <strong>R2</strong></li>
+<li>点图能打开，复制链接能访问</li>
+<li>CF 控制台 → R2 → 桶 → 对象列表出现该文件，路径形如 <code>2026/10/29/xxx.png</code></li>
+</ul>
+<h3 id="9-3-兜底是否真的兜底"><a href="#9-3-兜底是否真的兜底" class="headerlink" title="9.3 兜底是否真的兜底"></a>9.3 兜底是否真的兜底</h3><p>把 <strong>TG-主渠道</strong> 卡片右上角的开关<strong>关掉</strong> → 回上传页，渠道保持默认（Telegram）→ 传一张。</p>
+<ul>
+<li>显示成功且落在 R2 → <strong>兜底生效</strong></li>
+<li>报错「无可用渠道」→ 说明这个版本只在<strong>单次上传失败</strong>时切换，默认渠道被禁用不会改道</li>
+</ul>
+<p>测完<strong>立刻把 TG 开关打开</strong>。</p>
+<blockquote>
+<p>⚠️ 这两张测试图会永久留在 R2（不做双写）。10 GB 额度里这点体积无所谓，想保持干净测完删掉即可。</p>
+</blockquote>
+<h2 id="十、缓存：省额度的关键"><a href="#十、缓存：省额度的关键" class="headerlink" title="十、缓存：省额度的关键"></a>十、缓存：省额度的关键</h2><p>图片链接形如 <code>/file/xxx.png</code>，由边缘函数返回。默认每次访问都要跑一次函数，消耗每日 10 万次的额度。</p>
+<h3 id="10-1-三类请求的默认行为"><a href="#10-1-三类请求的默认行为" class="headerlink" title="10.1 三类请求的默认行为"></a>10.1 三类请求的默认行为</h3><table>
+<thead>
+<tr>
+<th>路径</th>
+<th>谁处理</th>
+<th>默认缓存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/</code>、<code>/dashboard</code>、JS&#x2F;CSS</td>
+<td>Pages 静态托管</td>
+<td>✅ 自动缓存，命中率极高</td>
+</tr>
+<tr>
+<td><code>/file/xxx.png</code></td>
+<td>Pages Functions</td>
+<td>⚠️ 取决于源站 <code>Cache-Control</code></td>
+</tr>
+<tr>
+<td><code>/upload</code>、<code>/api/*</code>、<code>/login</code></td>
+<td>Functions</td>
+<td>❌ 不该缓存</td>
+</tr>
+</tbody></table>
+<p><strong>命中缓存 &#x3D; 不触发 Function &#x3D; 不消耗每日额度。</strong></p>
+<h3 id="10-2-加一条-Cache-Rule"><a href="#10-2-加一条-Cache-Rule" class="headerlink" title="10.2 加一条 Cache Rule"></a>10.2 加一条 Cache Rule</h3><p>CF Dashboard → 选中域名 → <strong>缓存 → Cache Rules</strong> → 创建规则：</p>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>规则名称</td>
+<td><code>cache-images</code></td>
+</tr>
+<tr>
+<td>匹配条件</td>
+<td><code>URI Path</code> <strong>开头是</strong> <code>/file/</code></td>
+</tr>
+<tr>
+<td>缓存资格</td>
+<td>符合条件（Eligible for cache）</td>
+</tr>
+<tr>
+<td>Edge TTL</td>
+<td>忽略源站，设为 <strong>1 年</strong></td>
+</tr>
+<tr>
+<td>Browser TTL</td>
+<td>1 天</td>
+</tr>
+</tbody></table>
+<p>表达式写法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">starts_with(http.request.uri.path, &quot;/file/&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><strong>别对 <code>/api/*</code> 和 <code>/upload</code> 加任何缓存规则</strong>，否则会出现”传了图但列表不更新”这种诡异问题。</p>
+<h3 id="10-3-验证缓存是否命中"><a href="#10-3-验证缓存是否命中" class="headerlink" title="10.3 验证缓存是否命中"></a>10.3 验证缓存是否命中</h3><p>打开任意一张图，F12 → <strong>Network</strong> → 看响应头 <code>cf-cache-status</code>，<strong>刷新两次</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>第一次</th>
+<th>第二次</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>MISS</code></td>
+<td><code>HIT</code></td>
+<td>✅ 规则生效</td>
+</tr>
+<tr>
+<td><code>DYNAMIC</code></td>
+<td><code>DYNAMIC</code></td>
+<td>❌ 规则没匹配上</td>
+</tr>
+<tr>
+<td><code>MISS</code></td>
+<td><code>MISS</code></td>
+<td>⚠️ 匹配上了但没存住，源站返回了 <code>no-store</code> 或 <code>Set-Cookie</code></td>
+</tr>
+</tbody></table>
+<h2 id="十一、缓存的副作用：删图不生效"><a href="#十一、缓存的副作用：删图不生效" class="headerlink" title="十一、缓存的副作用：删图不生效"></a>十一、缓存的副作用：删图不生效</h2><p>这是唯一让我不适的地方。图删了，但浏览器和 CDN 还存着旧副本，链接照样打开。</p>
+<p>三种处理方式：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>操作</th>
+<th>评价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>配 API 凭据自动清</td>
+<td>后台填 <code>CF_ZONE_ID</code> + <code>CF_EMAIL</code> + <code>CF_API_KEY</code></td>
+<td>最省事，但要交出全局密钥</td>
+</tr>
+<tr>
+<td><strong>手动清</strong></td>
+<td>CF → 缓存 → 清除缓存 → 输 URL</td>
+<td>多一步，零风险</td>
+</tr>
+<tr>
+<td>等自然过期</td>
+<td>什么都不做</td>
+<td>接受延迟</td>
+</tr>
+</tbody></table>
+<p>如果想手动清，可以用这个 curl：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST <span class="string">&quot;https://api.cloudflare.com/client/v4/zones/<span class="variable">$ZONE_ID</span>/purge_cache&quot;</span> \</span><br><span class="line">  -H <span class="string">&quot;X-Auth-Email: <span class="variable">$CF_EMAIL</span>&quot;</span> \</span><br><span class="line">  -H <span class="string">&quot;X-Auth-Key: <span class="variable">$CF_API_KEY</span>&quot;</span> \</span><br><span class="line">  -H <span class="string">&quot;Content-Type: application/json&quot;</span> \</span><br><span class="line">  --data <span class="string">&#x27;&#123;&quot;files&quot;:[&quot;https://img.你的域名.com/file/xxx.png&quot;]&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>我选了手动清。</strong> 理由：项目要求填的是 <code>CF_API_KEY</code>，也就是<strong>全局 API 密钥</strong>，权限等于整个 Cloudflare 账号——能改 DNS、能删域名、能看所有账单。个人图床删图频率不高，为省这一步交出一个全账号密钥，风险收益不划算。真要上方案 1，务必定期轮换。</p>
+<h2 id="十二、接-PicGo"><a href="#十二、接-PicGo" class="headerlink" title="十二、接 PicGo"></a>十二、接 PicGo</h2><p>PicGo 走图床自己的 <code>/upload</code> 接口，这样渠道分配和数据库记录都保留。</p>
+<h3 id="12-1-装插件"><a href="#12-1-装插件" class="headerlink" title="12.1 装插件"></a>12.1 装插件</h3><p>PicGo → <strong>插件设置</strong> → 搜索安装 <code>picgo-plugin-web-uploader</code>。</p>
+<h3 id="12-2-配置图床"><a href="#12-2-配置图床" class="headerlink" title="12.2 配置图床"></a>12.2 配置图床</h3><p>PicGo → <strong>图床设置</strong> → <strong>Web图床</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>API 地址</td>
+<td>见下方</td>
+</tr>
+<tr>
+<td>POST 参数名</td>
+<td><code>file</code></td>
+</tr>
+<tr>
+<td>自定义 Body</td>
+<td>留空</td>
+</tr>
+<tr>
+<td>图片键名</td>
+<td><code>0.src</code></td>
+</tr>
+</tbody></table>
+<p>API 地址（一行到底，不要换行）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://img.你的域名.com/upload?authCode=你的上传认证码&amp;uploadChannel=telegram&amp;returnFormat=full</span><br></pre></td></tr></table></figure>
+
+<p>三个参数的作用：</p>
+<ul>
+<li><code>authCode</code> —— 上传认证码</li>
+<li><code>uploadChannel=telegram</code> —— 固定走 TG；想临时存 R2 改成 <code>cfr2</code></li>
+<li><code>returnFormat=full</code> —— <strong>必须加</strong>，否则返回 <code>/file/xxx</code> 相对路径，粘到文章里就是死链</li>
+</ul>
+<h3 id="12-3-两个容易出错的地方"><a href="#12-3-两个容易出错的地方" class="headerlink" title="12.3 两个容易出错的地方"></a>12.3 两个容易出错的地方</h3><ol>
+<li><p><strong>图片键名必须是 <code>0.src</code></strong></p>
+<p>接口返回的是<strong>数组</strong> <code>[&#123;&quot;src&quot;: &quot;...&quot;, &quot;publicUrl&quot;: &quot;...&quot;&#125;]</code>，不是对象。写成 <code>src</code> 或 <code>data.src</code> 都会取不到值，PicGo 提示”上传成功但无法获取图片地址”。</p>
+</li>
+<li><p><strong>域名用自定义域名，不要用 <code>pages.dev</code></strong></p>
+<p>以后换域名，所有历史链接不会跟着变。</p>
+</li>
+</ol>
+<h3 id="12-4-排错对照"><a href="#12-4-排错对照" class="headerlink" title="12.4 排错对照"></a>12.4 排错对照</h3><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>401</code> &#x2F; 认证失败</td>
+<td>authCode 错，或用户端认证码没保存成功</td>
+</tr>
+<tr>
+<td>上传成功但链接是 <code>/file/xxx</code></td>
+<td><code>returnFormat=full</code> 漏了</td>
+</tr>
+<tr>
+<td>无法获取图片地址</td>
+<td>图片键名不是 <code>0.src</code></td>
+</tr>
+<tr>
+<td><code>chat not found</code></td>
+<td>Chat ID 错，或 Bot 不在频道里</td>
+</tr>
+<tr>
+<td><code>not enough rights</code></td>
+<td>Bot 不是管理员，或没开「管理消息」权限</td>
+</tr>
+<tr>
+<td>超 20 MB 报错</td>
+<td>正常，TG 单文件上限；PicGo 里开「上传前压缩」</td>
+</tr>
+</tbody></table>
+<h2 id="十三、自定义域名"><a href="#十三、自定义域名" class="headerlink" title="十三、自定义域名"></a>十三、自定义域名</h2><p>用子域名，别占主站：</p>
+<ol>
+<li>Pages 项目 → <strong>自定义域</strong> → <strong>设置自定义域</strong> → 输入 <code>img.你的域名.com</code></li>
+<li>同一 CF 账号下会自动加 CNAME，不用手动配 DNS</li>
+<li>等状态从「正在初始化」变 <strong>Active</strong>，证书自动签发</li>
+</ol>
+<p>然后做两件容易漏的事：</p>
+<p><strong>① 把新域名加进白名单</strong></p>
+<p>后台 → <strong>安全设置 → 访问管理 → 放行域名</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cloudflare-imgbed-moteblog.pages.dev,img.你的域名.com</span><br></pre></td></tr></table></figure>
+
+<p><strong>两个都要留</strong> —— 旧的 <code>pages.dev</code> 还在用，删了会导致旧链接全部 403。英文逗号分隔，别加空格。</p>
+<p><strong>② 让新链接默认走新域名</strong></p>
+<p><strong>系统设置 → 网页设置 → 全局设置 → 默认 URL 前缀</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://img.你的域名.com/file/</span><br></pre></td></tr></table></figure>
+
+<p>已传过的图链接不会变，仍然走旧域名，但内容一样能访问。</p>
+<p>可选：CF Dashboard → 选中域名 → <strong>Images → 转换</strong> → 启用，即可支持 <code>?width=800&amp;fit=cover</code> 这类参数。有免费额度，超出按次计费，<strong>不开也完全不影响使用</strong>。</p>
+<h2 id="十四、安全清单"><a href="#十四、安全清单" class="headerlink" title="十四、安全清单"></a>十四、安全清单</h2><p>部署完这六项逐条过一遍：</p>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>管理端账号密码</strong>（默认无密码，任何人可进）</li>
+<li><input disabled="" type="checkbox"> <strong>上传认证码</strong></li>
+<li><input disabled="" type="checkbox"> <strong>关闭远端遥测</strong> —— 默认开启，会上报你的域名和访问链接给项目开发者</li>
+<li><input disabled="" type="checkbox"> <strong>开启域名过滤</strong>，只放行自己的域名（防盗链）</li>
+<li><input disabled="" type="checkbox"> <strong>建一个只含 <code>upload</code> 权限的 API Token</strong>，设 90 天过期 + 过期自动删除</li>
+<li><input disabled="" type="checkbox"> <strong>白名单模式保持关闭</strong> —— 它是应急手段（被大规模盗链时临时开），日常用会非常麻烦</li>
+</ul>
+<p>API Token 创建后<strong>只显示一次</strong>，弹窗关掉就再也看不到。点完立刻复制到密码管理器。</p>
+<h2 id="十五、常见报错速查"><a href="#十五、常见报错速查" class="headerlink" title="十五、常见报错速查"></a>十五、常见报错速查</h2><table>
+<thead>
+<tr>
+<th>报错 &#x2F; 现象</th>
+<th>原因</th>
+<th>解法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Could not resolve &quot;@aws-sdk/client-s3&quot;</code></td>
+<td>依赖没装上</td>
+<td>构建命令改 <code>npm install</code>，加 <code>NODE_VERSION=22</code></td>
+</tr>
+<tr>
+<td>部署成功但访问 404 &#x2F; 白页</td>
+<td>输出目录错</td>
+<td>必须是 <code>frontend-dist</code></td>
+</tr>
+<tr>
+<td><code>No SQL statements detected.</code></td>
+<td>控制台输入焦点问题</td>
+<td>拆三段执行，或 <code>Ctrl+Enter</code></td>
+</tr>
+<tr>
+<td>后台进不去 &#x2F; 500</td>
+<td>D1 表没建全，或绑定名写错</td>
+<td>查 5 张表，核对 <code>img_d1</code></td>
+</tr>
+<tr>
+<td>绑定后不生效</td>
+<td>没重试部署</td>
+<td>部署页手动重试</td>
+</tr>
+<tr>
+<td><code>/file/*</code> 一直是 <code>DYNAMIC</code></td>
+<td>Cache Rule 没匹配</td>
+<td>检查表达式与规则启用状态</td>
+</tr>
+<tr>
+<td>删图后链接还能打开</td>
+<td>CDN 缓存</td>
+<td>手动清缓存</td>
+</tr>
+<tr>
+<td>上传 <code>chat not found</code></td>
+<td>Chat ID 错</td>
+<td>重新用 <code>@VersaToolsBot</code> 取，负号保留</td>
+</tr>
+<tr>
+<td>上传 <code>not enough rights</code></td>
+<td>Bot 权限不足</td>
+<td>设为管理员并开「管理消息」</td>
+</tr>
+<tr>
+<td>R2 开始计费</td>
+<td>没设容量上限 &#x2F; 选了 IA 存储类</td>
+<td>设 9.5 GB，确认是 Standard</td>
+</tr>
+</tbody></table>
+<h2 id="十六、这套方案适合谁"><a href="#十六、这套方案适合谁" class="headerlink" title="十六、这套方案适合谁"></a>十六、这套方案适合谁</h2><p><strong>适合</strong>：个人博客、笔记站、文档站，图片以中小尺寸截图为主，日访问量在几万次以内，愿意花 40 分钟做一次性配置。</p>
+<p><strong>不适合</strong>：</p>
+<ul>
+<li>需要 SLA 的生产业务 —— Telegram 渠道没有可用性承诺，且其服务条款明确禁止把服务当作文件托管或 CDN</li>
+<li>单文件经常超过 20 MB —— TG 这层会频繁触发分片</li>
+<li>日访问量稳定超过 10 万次 —— 要么上 Workers 付费计划，要么让图片直接走 R2 公开域名</li>
+</ul>
+<h2 id="十七、最后一句实话"><a href="#十七、最后一句实话" class="headerlink" title="十七、最后一句实话"></a>十七、最后一句实话</h2><p>这套方案的本质是<strong>用运维复杂度换成本</strong>。</p>
+<p>它确实不花钱，但换来的是三个长期不确定性：</p>
+<ol>
+<li><strong>Telegram 随时可能变策略</strong>，或被判定违规封 Bot —— 所有图瞬间失效且无法申诉</li>
+<li><strong>Cloudflare 免费额度可能调整</strong>，10 万次&#x2F;日不是承诺</li>
+<li><strong>缓存的副作用要自己兜</strong>，删图不即时生效这件事会一直存在</li>
+</ol>
+<p>所以真正重要的图片，我还是会往 R2 那 10 GB 里放一份。<strong>Telegram 存的是”图”，R2 存的是”底”。</strong></p>
+<hr>
+<p><em>本文记录于 2026-10-29，项目版本 CloudFlare ImgBed v2.7.8。Cloudflare 与 Telegram 的政策和额度可能变化，以官方文档为准。</em></p>
+</article><div class="post-copyright"><div class="copyright-cc-box"><i class="anzhiyufont anzhiyu-icon-copyright"></i></div><div class="post-copyright__author_box"><a class="post-copyright__author_img" href="/" title="头像"><img class="post-copyright__author_img_back" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743508695848_blog_touxiang.jpg" title="头像" alt="头像"><img class="post-copyright__author_img_front" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743508695848_blog_touxiang.jpg" title="头像" alt="头像"></a><div class="post-copyright__author_name">Mote</div><div class="post-copyright__author_desc">远朋共聚，诗意绵长</div></div><div class="post-copyright__post__info"><a class="post-copyright__original" title="该文章为原创文章，注意版权协议" href="http://blog521126.xyz/2026/10/31/cloudflare-imgbed/">原创</a><a class="post-copyright-title"><span onclick="rm.copyPageUrl('http://blog521126.xyz/2026/10/31/cloudflare-imgbed/')">零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战</span></a></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div class="rewardLeftButton"><div class="post-reward" onclick="anzhiyu.addRewardMask()"><div class="reward-button button--animated" title="赞赏作者"><i class="anzhiyufont anzhiyu-icon-hand-heart-fill"></i>打赏作者</div><div class="reward-main"><div class="reward-all"><span class="reward-title">感谢你赐予我前进的力量</span><ul class="reward-group"><li class="reward-item"><a href="https://img.mote.nyc.mn/file/1743563672049_blog_wechat.png" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743563672049_blog_wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img.mote.nyc.mn/file/1743563696519_blog_alipay.jpg" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743563696519_blog_alipay.jpg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul><a class="reward-main-btn" href="/about/#about-reward" target="_blank"><div class="reward-text">赞赏者名单</div><div class="reward-dec">因为你们的支持让我意识到写文章的价值🙏</div></a></div></div></div><div id="quit-box" onclick="anzhiyu.removeRewardMask()" style="display: none"></div></div><div class="shareRight"><div class="share-link mobile"><div class="share-qrcode"><div class="share-button" title="使用手机访问这篇文章"><i class="anzhiyufont anzhiyu-icon-qrcode"></i></div><div class="share-main"><div class="share-main-all"><div id="qrcode" title="http://blog521126.xyz/2026/10/31/cloudflare-imgbed/"></div><div class="reward-dec">使用手机访问这篇文章</div></div></div></div></div><div class="share-link weibo"><a class="share-button" target="_blank" href="https://service.weibo.com/share/share.php?title=零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战&amp;url=http://blog521126.xyz/2026/10/31/cloudflare-imgbed/&amp;pic=https://img.521126.xyz/file/1793444376407_imgbed.png" rel="external nofollow noreferrer noopener"><i class="anzhiyufont anzhiyu-icon-weibo"></i></a></div><script>function copyCurrentPageUrl() {
+  var currentPageUrl = window.location.href;
+  var input = document.createElement("input");
+  input.setAttribute("value", currentPageUrl);
+  document.body.appendChild(input);
+  input.select();
+  input.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  document.body.removeChild(input);
+}</script><div class="share-link copyurl"><div class="share-button" id="post-share-url" title="复制链接" onclick="copyCurrentPageUrl()"><i class="anzhiyufont anzhiyu-icon-link"></i></div></div></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://blog521126.xyz" target="_blank">Mote-blog</a>！</span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__box"><div class="post-meta__box__tag-list"><a class="post-meta__box__tags" href="/tags/Cloudflare/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>Cloudflare<span class="tagsPageCount">1</span></a><a class="post-meta__box__tags" href="/tags/%E5%9B%BE%E5%BA%8A/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>图床<span class="tagsPageCount">1</span></a><a class="post-meta__box__tags" href="/tags/%E8%87%AA%E5%BB%BA%E6%9C%8D%E5%8A%A1/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>自建服务<span class="tagsPageCount">1</span></a><a class="post-meta__box__tags" href="/tags/Telegram/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>Telegram<span class="tagsPageCount">1</span></a><a class="post-meta__box__tags" href="/tags/R2/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>R2<span class="tagsPageCount">1</span></a></div></div></div><div class="post_share"><div class="social-share" data-image="https://img.521126.xyz/file/1793444376407_imgbed.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"/><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer="defer"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2025/04/01/hello-world/"><img class="prev-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Hello World</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="anzhiyufont anzhiyu-icon-comments"></i><span> 评论</span></div><div class="comment-randomInfo"><a onclick="anzhiyu.addRandomCommentInfo()" href="javascript:void(0)" style="display: none">匿名评论</a><a href="/privacy" style="margin-left: 4px">隐私政策</a></div><div class="comment-tips" id="comment-tips"><span>✅ 你无需删除空行，直接评论以获取最佳展示效果</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div><div class="comment-barrage"></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="author-info__sayhi" id="author-info__sayhi" onclick="anzhiyu.changeSayHelloText()"></div><div class="author-info-avatar"><img class="avatar-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743508695848_blog_touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-status"><img class="g-status" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743512741217_blog_ikun.png" alt="status"/></div></div><div class="author-info__description">欢迎来到我的Blog ！热爱网上冲浪🏄‍♂️ ，喜欢在🌊与⌨️之间寻找灵感。这里分享我的一些独特的见解。期待你的加入，一起畅谈风浪与文字的乐趣！ ✨</div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/"><h1 class="author-info__name">Mote</h1><div class="author-info__desc">远朋共聚，诗意绵长</div></a><div class="card-info-social-icons is-center"><a class="social-icon faa-parent animated-hover" href="https://space.bilibili.com/589400505" target="_blank" title="BiliBili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a><a class="social-icon faa-parent animated-hover" href="https://www.tiktok.com/@mote36.5" target="_blank" title="tiktok"><i class="anzhiyufont anzhiyu-icon-tiktok"></i></a></div></div></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bullhorn anzhiyu-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来看我的博客鸭~</div></div><div class="card-widget anzhiyu-right-widget" id="card-wechat" onclick="null"><div id="flip-wrapper"><div id="flip-content"><div class="face" style="background: url(https://bu.dusays.com/2023/01/13/63c02edf44033.png) center center / 100% no-repeat"></div><div class="back face" style="background: url(https://bu.dusays.com/2023/05/13/645fa415e8694.png) center center / 100% no-repeat"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bars"></i><span>文章目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6%E3%80%81%E5%85%88%E8%AF%B4%E9%A1%B9%E7%9B%AE%E5%9C%B0%E5%9D%80"><span class="toc-number">1.</span> <span class="toc-text">零、先说项目地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%87%AA%E5%BB%BA%E5%9B%BE%E5%BA%8A"><span class="toc-number">2.</span> <span class="toc-text">一、为什么自建图床</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9E%B6%E6%9E%84%EF%BC%9A%E5%9B%9B%E5%B1%82%E5%90%84%E5%8F%B8%E5%85%B6%E8%81%8C"><span class="toc-number">3.</span> <span class="toc-text">二、架构：四层各司其职</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%85%8D%E8%B4%B9%E9%A2%9D%E5%BA%A6%E5%88%B0%E5%BA%95%E6%9C%89%E5%A4%9A%E5%B0%91"><span class="toc-number">4.</span> <span class="toc-text">三、免费额度到底有多少</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%89%8D%E7%BD%AE%E5%87%86%E5%A4%87"><span class="toc-number">5.</span> <span class="toc-text">四、前置准备</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E8%B4%A6%E5%8F%B7%E6%B8%85%E5%8D%95"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 账号清单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Telegram%EF%BC%9A%E6%8B%BF-Bot-Token-%E5%92%8C-Chat-ID"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 Telegram：拿 Bot Token 和 Chat ID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-R2%EF%BC%9A%E5%BB%BA%E6%A1%B6"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 R2：建桶</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Pages-%E9%83%A8%E7%BD%B2"><span class="toc-number">6.</span> <span class="toc-text">五、Pages 部署</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Fork-%E4%BB%93%E5%BA%93"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 Fork 仓库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%88%9B%E5%BB%BA-Pages-%E9%A1%B9%E7%9B%AE"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 创建 Pages 项目</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%9E%84%E5%BB%BA%E9%85%8D%E7%BD%AE%EF%BC%88%E8%BF%99%E5%9B%9B%E9%A1%B9%E5%86%B3%E5%AE%9A%E6%88%90%E8%B4%A5%EF%BC%89"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 构建配置（这四项决定成败）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E9%A6%96%E6%AC%A1%E9%83%A8%E7%BD%B2%E4%B8%8E%E9%A2%84%E6%9C%9F%E7%8E%B0%E8%B1%A1"><span class="toc-number">6.4.</span> <span class="toc-text">5.4 首次部署与预期现象</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81D1-%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88%E9%99%84%E5%AE%8C%E6%95%B4-SQL%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">六、D1 数据库（附完整 SQL）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%BB%BA%E5%BA%93"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 建库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%88%9D%E5%A7%8B%E5%8C%96%E8%A1%A8%E7%BB%93%E6%9E%84"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 初始化表结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%AE%B5%EF%BC%9A5-%E5%BC%A0%E8%A1%A8"><span class="toc-number">7.2.1.</span> <span class="toc-text">第一段：5 张表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%AE%B5%EF%BC%9A12-%E4%B8%AA%E7%B4%A2%E5%BC%95"><span class="toc-number">7.2.2.</span> <span class="toc-text">第二段：12 个索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E6%AE%B5%EF%BC%9A4-%E4%B8%AA%E8%A7%A6%E5%8F%91%E5%99%A8"><span class="toc-number">7.2.3.</span> <span class="toc-text">第三段：4 个触发器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E8%A1%A8%E6%98%AF%E5%90%A6%E5%BB%BA%E5%A5%BD"><span class="toc-number">7.2.4.</span> <span class="toc-text">验证表是否建好</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%96%B9%E6%A1%88%EF%BC%88%E6%8E%A7%E5%88%B6%E5%8F%B0%E5%A7%8B%E7%BB%88%E4%B8%8D%E8%AE%A4%E6%97%B6%E7%9A%84%E5%A4%87%E9%80%89%EF%BC%89"><span class="toc-number">7.2.5.</span> <span class="toc-text">命令行方案（控制台始终不认时的备选）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%85%E9%A1%BB%E7%94%A8-D1%EF%BC%8C%E4%B8%8D%E7%94%A8-KV"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 为什么必须用 D1，不用 KV</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E7%BB%91%E5%AE%9A%EF%BC%88%E5%8F%98%E9%87%8F%E5%90%8D%E5%86%99%E6%AD%BB%EF%BC%8C%E4%B8%8D%E8%83%BD%E9%94%99%EF%BC%89"><span class="toc-number">7.4.</span> <span class="toc-text">6.4 绑定（变量名写死，不能错）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-%E5%BF%85%E9%A1%BB%E6%89%8B%E5%8A%A8%E3%80%8C%E9%87%8D%E8%AF%95%E9%83%A8%E7%BD%B2%E3%80%8D"><span class="toc-number">7.5.</span> <span class="toc-text">6.5 必须手动「重试部署」</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E7%BB%91%E5%AE%9A-R2"><span class="toc-number">8.</span> <span class="toc-text">七、绑定 R2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%90%8E%E5%8F%B0%E9%85%8D%E7%BD%AE"><span class="toc-number">9.</span> <span class="toc-text">八、后台配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E7%AC%AC%E4%B8%80%E4%BB%B6%E4%BA%8B%EF%BC%9A%E8%AE%BE%E5%AF%86%E7%A0%81"><span class="toc-number">9.1.</span> <span class="toc-text">8.1 第一件事：设密码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E9%85%8D-Telegram-%E6%B8%A0%E9%81%93"><span class="toc-number">9.2.</span> <span class="toc-text">8.2 配 Telegram 渠道</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E9%85%8D-R2-%E6%B8%A0%E9%81%93"><span class="toc-number">9.3.</span> <span class="toc-text">8.3 配 R2 渠道</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-%E8%AE%BE%E9%BB%98%E8%AE%A4%E6%B8%A0%E9%81%93"><span class="toc-number">9.4.</span> <span class="toc-text">8.4 设默认渠道</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E4%BF%9D%E6%8C%81%E5%85%B3%E9%97%AD"><span class="toc-number">9.5.</span> <span class="toc-text">8.5 负载均衡保持关闭</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E9%AA%8C%E8%AF%81%EF%BC%9A%E4%B8%89%E4%B8%AA%E5%BF%85%E6%B5%8B%E9%A1%B9"><span class="toc-number">10.</span> <span class="toc-text">九、验证：三个必测项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E4%B8%8A%E4%BC%A0%E8%90%BD%E7%82%B9"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 上传落点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-R2-%E9%80%9A%E9%81%93%E6%9C%AC%E8%BA%AB%E5%8F%AF%E7%94%A8"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 R2 通道本身可用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E5%85%9C%E5%BA%95%E6%98%AF%E5%90%A6%E7%9C%9F%E7%9A%84%E5%85%9C%E5%BA%95"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 兜底是否真的兜底</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E7%BC%93%E5%AD%98%EF%BC%9A%E7%9C%81%E9%A2%9D%E5%BA%A6%E7%9A%84%E5%85%B3%E9%94%AE"><span class="toc-number">11.</span> <span class="toc-text">十、缓存：省额度的关键</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E4%B8%89%E7%B1%BB%E8%AF%B7%E6%B1%82%E7%9A%84%E9%BB%98%E8%AE%A4%E8%A1%8C%E4%B8%BA"><span class="toc-number">11.1.</span> <span class="toc-text">10.1 三类请求的默认行为</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E5%8A%A0%E4%B8%80%E6%9D%A1-Cache-Rule"><span class="toc-number">11.2.</span> <span class="toc-text">10.2 加一条 Cache Rule</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-%E9%AA%8C%E8%AF%81%E7%BC%93%E5%AD%98%E6%98%AF%E5%90%A6%E5%91%BD%E4%B8%AD"><span class="toc-number">11.3.</span> <span class="toc-text">10.3 验证缓存是否命中</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E7%BC%93%E5%AD%98%E7%9A%84%E5%89%AF%E4%BD%9C%E7%94%A8%EF%BC%9A%E5%88%A0%E5%9B%BE%E4%B8%8D%E7%94%9F%E6%95%88"><span class="toc-number">12.</span> <span class="toc-text">十一、缓存的副作用：删图不生效</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E6%8E%A5-PicGo"><span class="toc-number">13.</span> <span class="toc-text">十二、接 PicGo</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E8%A3%85%E6%8F%92%E4%BB%B6"><span class="toc-number">13.1.</span> <span class="toc-text">12.1 装插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E9%85%8D%E7%BD%AE%E5%9B%BE%E5%BA%8A"><span class="toc-number">13.2.</span> <span class="toc-text">12.2 配置图床</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-%E4%B8%A4%E4%B8%AA%E5%AE%B9%E6%98%93%E5%87%BA%E9%94%99%E7%9A%84%E5%9C%B0%E6%96%B9"><span class="toc-number">13.3.</span> <span class="toc-text">12.3 两个容易出错的地方</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-4-%E6%8E%92%E9%94%99%E5%AF%B9%E7%85%A7"><span class="toc-number">13.4.</span> <span class="toc-text">12.4 排错对照</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E5%9F%9F%E5%90%8D"><span class="toc-number">14.</span> <span class="toc-text">十三、自定义域名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E5%AE%89%E5%85%A8%E6%B8%85%E5%8D%95"><span class="toc-number">15.</span> <span class="toc-text">十四、安全清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%B8%B8%E8%A7%81%E6%8A%A5%E9%94%99%E9%80%9F%E6%9F%A5"><span class="toc-number">16.</span> <span class="toc-text">十五、常见报错速查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%85%AD%E3%80%81%E8%BF%99%E5%A5%97%E6%96%B9%E6%A1%88%E9%80%82%E5%90%88%E8%B0%81"><span class="toc-number">17.</span> <span class="toc-text">十六、这套方案适合谁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%83%E3%80%81%E6%9C%80%E5%90%8E%E4%B8%80%E5%8F%A5%E5%AE%9E%E8%AF%9D"><span class="toc-number">18.</span> <span class="toc-text">十七、最后一句实话</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-history"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/10/31/cloudflare-imgbed/" title="零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.521126.xyz/file/1793444376407_imgbed.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战"/></a><div class="content"><a class="title" href="/2026/10/31/cloudflare-imgbed/" title="零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战">零成本自建图床：Cloudflare Pages + D1 + Telegram + R2 完整实战</a><time datetime="2026-10-31T12:30:00.000Z" title="发表于 2026-10-31 20:30:00">2026-10-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/01/hello-world/" title="Hello World"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World"/></a><div class="content"><a class="title" href="/2025/04/01/hello-world/" title="Hello World">Hello World</a><time datetime="2025-04-01T07:57:24.543Z" title="发表于 2025-04-01 15:57:24">2025-04-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/28/%E5%8D%9A%E6%96%87/" title="博文"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://files.codelife.cc/wallpaper/wallspic/20240426i2e39a.jpeg?x-oss-process=image/resize,limit_0,m_fill,w_307,h_158/quality,Q_92/format,webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="博文"/></a><div class="content"><a class="title" href="/2024/09/28/%E5%8D%9A%E6%96%87/" title="博文">博文</a><time datetime="2024-09-27T23:13:50.000Z" title="发表于 2024-09-28 07:13:50">2024-09-28</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener" href="https://space.bilibili.com/589400505" title="Bilibili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a><a class="deal_link" target="_blank" rel="noopener" href="https://weibo.com/motewy" title="微博"><i class="anzhiyufont anzhiyu-icon-weibo"></i></a><a class="deal_link" target="_blank" rel="noopener" href="https://www.tiktok.com/@Mote36.5/" title="tiktok"><i class="anzhiyufont anzhiyu-icon-tiktok"></i></a><img class="footer_mini_logo" title="返回顶部" alt="返回顶部" onclick="anzhiyu.scrollToDest(0, 500)" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743508695848_blog_touxiang.jpg" size="50px"/><a class="deal_link" target="_blank" rel="noopener" href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&amp;k=eTz4-bGSMOPjwL9n27aRXAPgMySzzoBH&amp;authKey=LROe%2B0kdTr%2FxpHAjStHR2Oa5n3tveSfZSdc40HoO7IixMzcLawUWlPuX4Z56ZPCY&amp;noverify=0&amp;group_code=675105773" title="qq群聊"><i class="anzhiyufont anzhiyu-icon-qq"></i></a><a class="deal_link" target="_blank" rel="noopener" href="https://t.me/+PQZ6Aj_r-d41OWVl" title="TG群"><i class="anzhiyufont anzhiyu-icon-paper-plane"></i></a><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/Mot-e" title="Github"><i class="anzhiyufont anzhiyu-icon-github"></i></a></div><div id="workboard"><img class="workSituationImg boardsign" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743567169824_blog_布偶猫.png" alt="距离成富人也就还差一个梦~" title="距离成富人也就还差一个梦~"/><div id="runtimeTextTip"></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div id="footer-bar-tips"><div class="copyright">&copy;2024 - 2026 By <a class="footer-bar-link" href="/" title="Mote" target="_blank">Mote</a></div></div><div id="footer-type-tips"></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://img.mote.nyc.mn/" title="图床">图床</a><a class="footer-bar-link cc" href="/copyright" title="cc协议"><i class="anzhiyufont anzhiyu-icon-copyright-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-by-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-nc-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-nd-line"></i></a></div></div></div></footer></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="sidebar-site-data site-data is-center"><a href="/archives/" title="archive"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/" title="tag"><div class="headline">标签</div><div class="length-num">6</div></a><a href="/categories/" title="category"><div class="headline">分类</div><div class="length-num">2</div></a></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><a class="darkmode_switchbutton menu-child" href="javascript:void(0);" title="显示模式"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span>显示模式</span></a></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">视频</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://space.bilibili.com/589400505" title="bilibili"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743582934800_blog_b站.jpg" alt="bilibili"/><span class="back-menu-item-text">bilibili</span></a><a class="back-menu-item" target="_blank" rel="noopener" href="https://www.tiktok.com/@Mote36.5/" title="tiktok"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743582666472_blog_tiktok.png" alt="tiktok"/><span class="back-menu-item-text">tiktok</span></a><a class="back-menu-item" target="_blank" rel="noopener" href="https://www.youtube.com/@mote521" title="youtube"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743583299250_blog_youtub.jpg" alt="youtube"/><span class="back-menu-item-text">youtube</span></a></div></div><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://img.mote.nyc.mn/" title="图床"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://img.mote.nyc.mn/file/1743583544399_blog_tuchuang.jpg" alt="图床"/><span class="back-menu-item-text">图床</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 文章</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags faa-tada" style="font-size: 0.9em;"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/album/"><i class="anzhiyufont anzhiyu-icon-images faa-tada" style="font-size: 0.9em;"></i><span> 相册集</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 关于</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/about/"><i class="anzhiyufont anzhiyu-icon-paper-plane faa-tada" style="font-size: 0.9em;"></i><span> 关于本人</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/essay/"><i class="anzhiyufont anzhiyu-icon-lightbulb faa-tada" style="font-size: 0.9em;"></i><span> 闲言碎语</span></a></li><li><a class="site-page child faa-parent animated-hover" href="javascript:toRandomPost()"><i class="anzhiyufont anzhiyu-icon-shoe-prints1 faa-tada" style="font-size: 0.9em;"></i><span> 随便逛逛</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="item-headline"></div><div class="card-tag-cloud"><a href="/tags/Cloudflare/" style="font-size: 0.88rem;">Cloudflare<sup>1</sup></a><a href="/tags/R2/" style="font-size: 0.88rem;">R2<sup>1</sup></a><a href="/tags/Telegram/" style="font-size: 0.88rem;">Telegram<sup>1</sup></a><a href="/tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 0.88rem;">图床<sup>1</sup></a><a href="/tags/%E8%87%AA%E5%BB%BA%E6%9C%8D%E5%8A%A1/" style="font-size: 0.88rem;">自建服务<sup>1</sup></a><a href="/tags/%E8%87%AA%E6%88%91%E6%8F%90%E5%8D%87/" style="font-size: 0.88rem;">自我提升<sup>1</sup></a></div></div><hr/></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="anzhiyufont anzhiyu-icon-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="anzhiyufont anzhiyu-icon-gear"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="anzhiyufont anzhiyu-icon-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="anzhiyufont anzhiyu-icon-comments"></i></a><a id="switch-commentBarrage" href="javascript:anzhiyu.switchCommentBarrage();" title="开关弹幕"><i class="anzhiyufont anzhiyu-icon-danmu"></i></a><button id="go-up" type="button" title="回到顶部"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div><div id="nav-music"><a id="nav-music-hoverTips" onclick="anzhiyu.musicToggle()" accesskey="m">播放音乐</a><div id="console-music-bg"></div><meting-js id="8152976493" server="netease" type="playlist" mutex="true" preload="none" theme="var(--anzhiyu-main)" data-lrctype="0" order="random" volume="0.7"></meting-js></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="anzhiyufont anzhiyu-icon-xmark"></i></button></nav><div class="is-center" id="loading-database"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-pulse-icon"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="anzhiyufont anzhiyu-icon-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="anzhiyufont anzhiyu-icon-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right" style="font-size: 1rem;"></i></div><div class="rightMenu-item" id="menu-top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="anzhiyufont anzhiyu-icon-paste"></i><span>粘贴文本</span></div><a class="rightMenu-item" id="menu-commenttext"><i class="anzhiyufont anzhiyu-icon-comment-medical"></i><span>引用到评论</span></a><div class="rightMenu-item" id="menu-newwindow"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="anzhiyufont anzhiyu-icon-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="anzhiyufont anzhiyu-icon-images"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="anzhiyufont anzhiyu-icon-download"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-newwindowimg"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开图片</span></div><div class="rightMenu-item" id="menu-search"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-searchBaidu"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>百度搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="anzhiyufont anzhiyu-icon-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="anzhiyufont anzhiyu-icon-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="anzhiyufont anzhiyu-icon-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-playlist" onclick="window.open(&quot;https://y.qq.com/n/ryqq/playlist/8802438608&quot;, &quot;_blank&quot;);" style="display: none;"><i class="anzhiyufont anzhiyu-icon-radio"></i><span>查看所有歌曲</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item menu-link" id="menu-randomPost"><i class="anzhiyufont anzhiyu-icon-shuffle"></i><span>随便逛逛</span></a><a class="rightMenu-item menu-link" href="/categories/"><i class="anzhiyufont anzhiyu-icon-cube"></i><span>博客分类</span></a><a class="rightMenu-item menu-link" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags"></i><span>文章标签</span></a></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item" id="menu-copy" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制地址</span></a><a class="rightMenu-item" id="menu-commentBarrage" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-message"></i><span class="menu-commentBarrage-text">关闭热评</span></a><a class="rightMenu-item" id="menu-darkmode" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></a><a class="rightMenu-item" id="menu-translate" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-language"></i><span>轉為繁體</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.8.5/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script>var meting_api = "https://meting.qjqq.cn/?server=:server&type=:type&id=:id&auth=:auth&r=:r";
+</script><canvas id="universe"></canvas><script async src="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.0/dark/dark.js"></script><script>// 消除控制台打印
+var HoldLog = console.log;
+console.log = function () {};
+let now1 = new Date();
+queueMicrotask(() => {
+  const Log = function () {
+    HoldLog.apply(console, arguments);
+  }; //在恢复前输出日志
+  const grt = new Date("05/01/2024 00:00:00"); //此处修改你的建站时间或者网站上线时间
+  now1.setTime(now1.getTime() + 250);
+  const days = (now1 - grt) / 1000 / 60 / 60 / 24;
+  const dnum = Math.floor(days);
+  const ascll = [
+    `欢迎使用安知鱼!`,
+    `生活明朗, 万物可爱`,
+    `
+        
+       █████╗ ███╗   ██╗███████╗██╗  ██╗██╗██╗   ██╗██╗   ██╗
+      ██╔══██╗████╗  ██║╚══███╔╝██║  ██║██║╚██╗ ██╔╝██║   ██║
+      ███████║██╔██╗ ██║  ███╔╝ ███████║██║ ╚████╔╝ ██║   ██║
+      ██╔══██║██║╚██╗██║ ███╔╝  ██╔══██║██║  ╚██╔╝  ██║   ██║
+      ██║  ██║██║ ╚████║███████╗██║  ██║██║   ██║   ╚██████╔╝
+      ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝    ╚═════╝
+        
+        `,
+    "已上线",
+    dnum,
+    "天",
+    "©2024 By 安知鱼 V1.6.14",
+  ];
+  const ascll2 = [`NCC2-036`, `调用前置摄像头拍照成功，识别为【小笨蛋】.`, `Photo captured: `, `🤪`];
+
+  setTimeout(
+    Log.bind(
+      console,
+      `\n%c${ascll[0]} %c ${ascll[1]} %c ${ascll[2]} %c${ascll[3]}%c ${ascll[4]}%c ${ascll[5]}\n\n%c ${ascll[6]}\n`,
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      ""
+    )
+  );
+  setTimeout(
+    Log.bind(
+      console,
+      `%c ${ascll2[0]} %c ${ascll2[1]} %c \n${ascll2[2]} %c\n${ascll2[3]}\n`,
+      "color:white; background-color:#4fd953",
+      "",
+      "",
+      'background:url("https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/tinggge.gif") no-repeat;font-size:450%'
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c WELCOME %c 你好，小笨蛋.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(
+      console,
+      "%c ⚡ Powered by 安知鱼 %c 你正在访问 Mote 的博客.",
+      "color:white; background-color:#f0ad4e",
+      ""
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c W23-12 %c 你已打开控制台.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(console, "%c S013-782 %c 你现在正处于监控中.", "color:white; background-color:#d9534f", "")
+  );
+});</script><script async src="/anzhiyu/random.js"></script><script async="async">(function () {
+  var grt = new Date("05/01/2024 00:00:00"); //设置网站上线时间
+  var now = new Date();
+  var dnum;
+  var hnum;
+  var mnum;
+  var snum;
+  var nowHour;
+
+  // 计算并更新天数、小时数、分钟数和秒数
+  function updateTime() {
+    now = new Date(); // 更新 now 的值
+    nowHour = now.getHours(); // 更新 nowHour 的值
+    var days = (now - grt) / 1000 / 60 / 60 / 24;
+    dnum = Math.floor(days);
+    var hours = (now - grt) / 1000 / 60 / 60 - 24 * dnum;
+    hnum = Math.floor(hours);
+    if (String(hnum).length == 1) {
+      hnum = "0" + hnum;
+    }
+    var minutes = (now - grt) / 1000 / 60 - 24 * 60 * dnum - 60 * hnum;
+    mnum = Math.floor(minutes);
+    if (String(mnum).length == 1) {
+      mnum = "0" + mnum;
+    }
+    var seconds = (now - grt) / 1000 - 24 * 60 * 60 * dnum - 60 * 60 * hnum - 60 * mnum;
+    snum = Math.round(seconds);
+    if (String(snum).length == 1) {
+      snum = "0" + snum;
+    }
+  }
+
+  // 更新网页中显示的网站运行时间
+  function updateHtml() {
+    const footer = document.getElementById("footer");
+    if (!footer) return
+    let currentTimeHtml = "";
+    if (nowHour < 18 && nowHour >= 9) {
+      // 如果是上班时间，默认就是"安知鱼-上班摸鱼中.svg"图片，不需要更改
+      currentTimeHtml = `本站居然运行了 ${dnum} 天<span id='runtime'> ${hnum} 小时 ${mnum} 分 ${snum} 秒 </span><i class='anzhiyufont anzhiyu-icon-heartbeat' style='color:red'></i>`;
+    } else {
+      // 如果是下班时间，插入"安知鱼-下班啦.svg"图片
+      let img = document.querySelector("#workboard .workSituationImg");
+      if (img != null) {
+        img.src = "https://img.mote.nyc.mn/file/1743567169824_blog_布偶猫.png";
+        img.title = "开开心心的玩耍，嘿嘿~";
+        img.alt = "开开心心的玩耍，嘿嘿~";
+      }
+
+      currentTimeHtml = `本站居然运行了 ${dnum} 天<span id='runtime'> ${hnum} 小时 ${mnum} 分 ${snum} 秒 </span><i class='anzhiyufont anzhiyu-icon-heartbeat' style='color:red'></i>`;
+    }
+
+    if (document.getElementById("runtimeTextTip")) {
+      document.getElementById("runtimeTextTip").innerHTML = currentTimeHtml;
+    }
+  }
+
+  setInterval(() => {
+    updateTime();
+    updateHtml();
+  }, 1000);
+})();</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>(() => {
+  const init = () => {
+    twikoo.init(Object.assign({
+      el: '#twikoo-wrap',
+      envId: 'https://blog-twikoo-db.521126.xyz/',
+      region: '',
+      onCommentLoaded: () => {
+        anzhiyu.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      }
+    }, null))
+  }
+
+  const loadTwikoo = () => {
+    if (typeof twikoo === 'object') setTimeout(runFn,0)
+    else getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.all.min.js').then(runFn)
+  }
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://blog-twikoo-db.521126.xyz/',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const runFn = () => {
+    init();
+    GLOBAL_CONFIG_SITE.isPost && getCount()
+  }
+
+  if ('Twikoo' === 'Twikoo' || !true) {
+    if (true) anzhiyu.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else {
+      loadTwikoo()
+    }
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script><input type="hidden" name="page-type" id="page-type" value="post"><script async src="/js/anzhiyu/comment_barrage.js"></script></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const getComment = () => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://blog-twikoo-db.521126.xyz/',
+        region: '',
+        pageSize: 6,
+        includeReply: true
+      }).then(function (res) {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        saveToLocal.set('twikoo-newest-comments', JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray)
+      }).catch(function (err) {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'data-lazy-src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'><div class='name'><span>${array[i].nick} </span></div></a>`
+        }
+        
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <time datetime="${array[i].date}">${anzhiyu.diffDate(array[i].date, true)}</time></div>
+        </div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom && ($dom.innerHTML= result)
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('twikoo-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><script async data-pjax src="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.1/bubble/bubble.js"></script><script async data-pjax src="https://cdn.jsdelivr.net/npm/anzhiyu-theme-static@1.0.0/waterfall/waterfall.min.js"></script><script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/qrcodejs/1.0.0/qrcode.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.min.css"><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/click-heart.min.js" async="async" mobile="true"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/anzhiyu-theme-static@1.0.0/aplayer/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/anzhiyu-blog-static@1.0.1/js/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/hexo-anzhiyu-music@1.0.1/assets/js/Meting2.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:type\"]","meta[property=\"og:site_name\"]","meta[property=\"og:description\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+  // removeEventListener scroll 
+  anzhiyu.removeGlobalFnEvent('pjax')
+  anzhiyu.removeGlobalFnEvent('themeChange')
+
+  document.getElementById('rightside').classList.remove('rightside-show')
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><div class="app-refresh" id="app-refresh" style="position: fixed;top: -2.2rem;left: 0;right: 0;z-index: 99999;padding: 0 1rem;font-size: 15px;height: 2.2rem;transition: all 0.3s ease;"><div class="app-refresh-wrap" style=" display: flex;color: #fff;height: 100%;align-items: center;justify-content: center;"><label>✨ 有新文章啦！ 👉</label><a href="javascript:void(0)" onclick="location.reload()"><span style="color: #fff;text-decoration: underline;cursor: pointer;">🍗点击食用🍔</span></a></div></div><script>if ('serviceWorker' in navigator) {
+if (navigator.serviceWorker.controller) {
+navigator.serviceWorker.addEventListener('controllerchange', function() {
+showNotification()
+})
+}
+window.addEventListener('load', function() {
+navigator.serviceWorker.register('/sw.js')
+})
+}
+function showNotification() {
+if (GLOBAL_CONFIG.Snackbar) {
+var snackbarBg =
+document.documentElement.getAttribute('data-theme') === 'light' ?
+GLOBAL_CONFIG.Snackbar.bgLight :
+GLOBAL_CONFIG.Snackbar.bgDark
+var snackbarPos = GLOBAL_CONFIG.Snackbar.position
+Snackbar.show({
+text: '✨ 有新文章啦！ 👉',
+backgroundColor: snackbarBg,
+duration: 500000,
+pos: snackbarPos,
+actionText: '🍗点击食用🍔',
+actionTextColor: '#fff',
+onActionClick: function(e) {
+location.reload()
+},
+})
+} else {
+var showBg =
+document.documentElement.getAttribute('data-theme') === 'light' ?
+'#3b70fc' :
+'#1f1f1f'
+var cssText = `top: 0; background: ${showBg};`
+document.getElementById('app-refresh').style.cssText = cssText
+}
+}</script><script charset="UTF-8" src="https://cdn.jsdelivr.net/npm/anzhiyu-theme-static@1.1.5/accesskey/accesskey.min.js"></script></div><div id="popup-window"><div class="popup-window-title">通知</div><div class="popup-window-divider"></div><div class="popup-window-content"><div class="popup-tip">你好呀</div><div class="popup-link"><i class="anzhiyufont anzhiyu-icon-arrow-circle-right"></i></div></div></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":310},"mobile":{"show":true},"log":false});</script></body></html>
