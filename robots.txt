@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# 静态资源与检索索引无需抓取
+Disallow: /js/
+Disallow: /css/
+Disallow: /live2dw/
+Disallow: /anzhiyu/
+Disallow: /search.xml$
+Disallow: /baidu_urls.txt
+
+# 站点地图
+Sitemap: https://blog.521126.xyz/sitemap.xml
